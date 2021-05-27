@@ -13,6 +13,7 @@ import (
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	mreq1 "k8s-machine-requests/api/v1alpha1"
 )
 
 func main() {
@@ -45,6 +46,29 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 
 	metav1.AddToGroupVersion(scheme, netdata.GroupVersion)
 	return nil
+}
+
+func getMachineRequest() mreq1.MachineRequestList {
+
+        if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
+                fmt.Printf("unable to add registered types to client scheme\n")
+                os.Exit(1)
+        }
+
+        cl, err := client.New(config.GetConfigOrDie(), client.Options{})
+        if err != nil {
+                fmt.Printf("Failed to create a client\n")
+                os.Exit(1)
+        }
+
+        var mreqs mreq1.MachineRequestList
+        err = cl.List(context.Background(), &mreqs, client.InNamespace("default"))
+        if err != nil {
+                fmt.Printf("Failed to list machine requests in namespace default: %v\n", err)
+                os.Exit(1)
+        }
+
+        return mreqs
 }
 
 func getInventory(w http.ResponseWriter, r *http.Request) {
