@@ -1,7 +1,5 @@
 FROM golang:1.16 as builder
 
-RUN mkdir /etc/remotek8s
-
 WORKDIR /opt/ipxe
 
 # Copy the Go Modules manifests
@@ -23,10 +21,10 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o ipxe mai
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-#FROM gcr.io/distroless/static:nonroot
-#
-#WORKDIR /
-#COPY --from=builder /opt/ipxe/ipxe .
-#USER nonroot:nonroot
-#
-ENTRYPOINT ["/opt/ipxe/ipxe"]
+FROM gcr.io/distroless/static:nonroot
+
+WORKDIR /
+COPY --from=builder /opt/ipxe/ipxe .
+USER nonroot:nonroot
+
+ENTRYPOINT ["/ipxe"]
