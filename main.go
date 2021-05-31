@@ -3,27 +3,40 @@ package main
 import (
 	"context"
 	"fmt"
-	"k8s.io/client-go/kubernetes/scheme"
-
 	inv "k8s-inventory/api/v1alpha1"
-	mreq1 "k8s-machine-requests/api/v1alpha1"
+	"k8s.io/client-go/kubernetes/scheme"
+	//	mreq1 "k8s-machine-requests/api/v1alpha1"
+	"log"
+	"net"
 	"net/http"
 	netdata "netdata/api/v1"
 	"os"
+	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func main() {
-	http.HandleFunc("/ipxe", getNetdata)
-	http.HandleFunc("/inv", getInventory)
-	http.HandleFunc("/reqs", getMachineRequest)
+	http.HandleFunc("/ipxe", getChain)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		fmt.Println("Failed to start IPXE Server")
 		os.Exit(1)
 	}
 }
 
+func getChain(w http.ResponseWriter, r *http.Request) {
+
+	ip := getIP(r)
+	fmt.Println(ip)
+	mac := getNetdata(ip)
+	fmt.Println(mac)
+	uuid := getInventory(mac)
+	fmt.Println(uuid)
+	//w.Write(uuid)
+
+}
+
+/*
 func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("test1")
 
@@ -48,10 +61,11 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("machine requests %+v", mreqs)
 }
+*/
 
-func getInventory(w http.ResponseWriter, r *http.Request) {
+func getInventory(mac string) string {
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
-		fmt.Println("unable to add registered types inventory to client scheme")
+		fmt.Println("unable to add registered types inventory to client scheme", err)
 		os.Exit(1)
 	}
 
@@ -61,33 +75,40 @@ func getInventory(w http.ResponseWriter, r *http.Request) {
 		os.Exit(1)
 	}
 
-	var inventory inv.InventoryList
-	err = cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"macAddr": "3868dd268df5"})
+	re, err := regexp.Compile(`[:]`)
 	if err != nil {
-		fmt.Println("Failed to list crds netdata in namespace default")
+		log.Fatal(err)
+	}
+
+	mac = re.ReplaceAllString(mac, "")
+
+	var inventory inv.InventoryList
+	err = cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"macAddr": mac})
+	if err != nil {
+		fmt.Println("Failed to list crds netdata in namespace default", err)
 		os.Exit(1)
 	}
 
 	clientUUID := inventory.Items[0].Spec.System.ID
-	fmt.Println(clientUUID)
+	return clientUUID
 }
 
-func getNetdata(w http.ResponseWriter, r *http.Request) {
+func getNetdata(ip string) string {
 	if err := netdata.AddToScheme(scheme.Scheme); err != nil {
-		fmt.Println("unable to add registered types netdata to client scheme")
+		fmt.Println("Unable to add registered types netdata to client scheme", err)
 		os.Exit(1)
 	}
 
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		fmt.Println("Failed to create a client")
+		fmt.Println("Failed to create a client", err)
 		os.Exit(1)
 	}
 
 	var crds netdata.NetdataList
-	err = cl.List(context.Background(), &crds, client.InNamespace("default"), client.MatchingLabels{"ipv4": "10.20.30.40"})
+	err = cl.List(context.Background(), &crds, client.InNamespace("default"), client.MatchingLabels{"ipv4": ip})
 	if err != nil {
-		fmt.Println("Failed to list crds netdata in namespace default")
+		fmt.Println("Failed to list crds netdata in namespace default", err)
 		os.Exit(1)
 	}
 
@@ -96,8 +117,7 @@ func getNetdata(w http.ResponseWriter, r *http.Request) {
 	// 2. check does an element exists (CRD)
 
 	clientMACAddr := crds.Items[0].Spec.MACAddress
-	fmt.Println(clientMACAddr)
-	//return clientMACAddr
+	return clientMACAddr
 }
 
 func getIP(r *http.Request) string {
@@ -105,6 +125,8 @@ func getIP(r *http.Request) string {
 	if forwarded != "" {
 		return forwarded
 	}
+
+	r.RemoteAddr, _, _ = net.SplitHostPort(r.RemoteAddr)
 
 	return r.RemoteAddr
 }
