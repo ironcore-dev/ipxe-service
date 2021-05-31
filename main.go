@@ -19,51 +19,52 @@ func main() {
 	http.HandleFunc("/inv", getInventory)
 	http.HandleFunc("/reqs", getMachineRequest)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
-		fmt.Println("Failed to start IPXE Server\n")
+		fmt.Println("Failed to start IPXE Server")
 		os.Exit(1)
 	}
 }
 
 func getMachineRequest(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("test1\n")
+	fmt.Println("test1")
 
 	if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
-		fmt.Printf("unable to add registered types machine request to client scheme\n")
+		fmt.Println("unable to add registered types machine request to client scheme")
 		os.Exit(1)
 	}
-	fmt.Printf("test1\n")
+	fmt.Println("test1")
 
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		fmt.Printf("Failed to create a client\n")
+		fmt.Println("Failed to create a client")
 		os.Exit(1)
 	}
 
 	var mreqs mreq1.MachineRequestList
 	err = cl.List(context.Background(), &mreqs, client.InNamespace("default"))
 	if err != nil {
-		fmt.Printf("Failed to list machine requests in namespace default: %v\n", err)
+		fmt.Println("Failed to list machine requests in namespace default")
 		os.Exit(1)
 	}
-	fmt.Println("machine requests %+v", mreqs)
+
+	fmt.Printf("machine requests %+v", mreqs)
 }
 
 func getInventory(w http.ResponseWriter, r *http.Request) {
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
-		fmt.Printf("unable to add registered types inventory to client scheme\n")
+		fmt.Println("unable to add registered types inventory to client scheme")
 		os.Exit(1)
 	}
 
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		fmt.Println("Failed to create a client\n")
+		fmt.Println("Failed to create a client")
 		os.Exit(1)
 	}
 
 	var inventory inv.InventoryList
 	err = cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"macAddr": "3868dd268df5"})
 	if err != nil {
-		fmt.Println("Failed to list crds netdata in namespace default: %v\n", err)
+		fmt.Println("Failed to list crds netdata in namespace default")
 		os.Exit(1)
 	}
 
@@ -73,20 +74,20 @@ func getInventory(w http.ResponseWriter, r *http.Request) {
 
 func getNetdata(w http.ResponseWriter, r *http.Request) {
 	if err := netdata.AddToScheme(scheme.Scheme); err != nil {
-		fmt.Printf("unable to add registered types netdata to client scheme\n")
+		fmt.Println("unable to add registered types netdata to client scheme")
 		os.Exit(1)
 	}
 
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		fmt.Println("Failed to create a client\n")
+		fmt.Println("Failed to create a client")
 		os.Exit(1)
 	}
 
 	var crds netdata.NetdataList
 	err = cl.List(context.Background(), &crds, client.InNamespace("default"), client.MatchingLabels{"ipv4": "10.20.30.40"})
 	if err != nil {
-		fmt.Println("Failed to list crds netdata in namespace default: %v\n", err)
+		fmt.Println("Failed to list crds netdata in namespace default")
 		os.Exit(1)
 	}
 
