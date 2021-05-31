@@ -2,18 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	inv "k8s-inventory/api/v1alpha1"
+	mreq1 "k8s-machine-requests/api/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
-	//	mreq1 "k8s-machine-requests/api/v1alpha1"
-	"log"
 	"net"
 	"net/http"
 	netdata "netdata/api/v1"
 	"os"
-	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"strings"
 )
 
 func main() {
@@ -32,11 +32,17 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(mac)
 	uuid := getInventory(mac)
 	fmt.Println(uuid)
-	//w.Write(uuid)
+
+	w.Header().Add("Content-Type", "application/json")
+	resp, _ := json.Marshal(map[string]string{
+		"IP":   ip,
+		"MAC":  mac,
+		"UUID": uuid,
+	})
+	w.Write(resp)
 
 }
 
-/*
 func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("test1")
 
@@ -61,7 +67,6 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("machine requests %+v", mreqs)
 }
-*/
 
 func getInventory(mac string) string {
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
@@ -75,12 +80,7 @@ func getInventory(mac string) string {
 		os.Exit(1)
 	}
 
-	re, err := regexp.Compile(`[:]`)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	mac = re.ReplaceAllString(mac, "")
+	mac = strings.ReplaceAll(mac, ":", "")
 
 	var inventory inv.InventoryList
 	err = cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"macAddr": mac})
@@ -126,7 +126,7 @@ func getIP(r *http.Request) string {
 		return forwarded
 	}
 
-	r.RemoteAddr, _, _ = net.SplitHostPort(r.RemoteAddr)
+	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 
-	return r.RemoteAddr
+	return clientIP
 }
