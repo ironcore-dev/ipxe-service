@@ -6,3 +6,5 @@ build:
 run:
 	/usr/local/go/bin/go run main.go
 
+test:
+	go test -v
