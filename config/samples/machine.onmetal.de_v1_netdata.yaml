@@ -10,5 +10,5 @@ spec:
   ipAddress: '10.20.30.40'
   ipv6Address: 'fe80::14bf:7bff:fe2f:8e9c'
   macAddress: '16:bf:7b:2f:8e:9c'
-  expiration: '2021-04-09T18:25:43.511Z'
+  expiration: '2025-04-09T18:25:43.511Z'
   hostname: 'test.com'
