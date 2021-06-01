@@ -1,0 +1,4 @@
+#!ipxe
+
+set base-url http://45.86.152.1/ipxe
+kernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs
