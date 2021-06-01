@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ipxe-default-config
+  labels:
+    {{- include "ipxe-service.labels" . | nindent 4 }}
+data:
+  ipxe-default-config.yaml: |
+    ---
+    \#!ipxe
+    
+    set base-url http://45.86.152.1/ipxe
+    kernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs gl.url=${base-url}/root.squashfs gl.live=1 ip=dhcp console=ttyS1,115200n8 console=tty0 earlyprintk=ttyS1,115200n8 consoleblank=0 ignition.firstboot=1 ignition.config.url=${base-url}/tmp.ign ignition.platform.id=metal
+    initrd ${base-url}/rootfs.initrd
+    boot

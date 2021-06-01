@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	inv "k8s-inventory/api/v1alpha1"
 	mreq1 "k8s-machine-requests/api/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
+	"log"
 	"net"
 	"net/http"
 	netdata "netdata/api/v1"
@@ -33,6 +35,8 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 	uuid := getInventory(mac)
 	fmt.Println(uuid)
 
+	getConf(ip)
+
 	w.Header().Add("Content-Type", "application/json")
 	resp, _ := json.Marshal(map[string]string{
 		"IP":   ip,
@@ -40,9 +44,6 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 		"UUID": uuid,
 	})
 	w.Write(resp)
-
-	createFile()
-
 }
 
 func getMachineRequest(w http.ResponseWriter, r *http.Request) {
@@ -133,17 +134,27 @@ func getIP(r *http.Request) string {
 	return clientIP
 }
 
-func createFile() {
+func getConf(ip string) {
 
-	contentOfBoot4 := []byte("#!ipxe\n\nset base-url http://45.86.152.1/ipxe\nkernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs\n")
-
-	file, err := os.Create("boot4")
+	err := os.Mkdir("ip"+ip, 0755)
 	if err != nil {
-		fmt.Println("Unable to create file:", err)
-		os.Exit(1)
+		log.Fatalf("Unable to create a client's ipxe directory:", err)
+		os.Exit(21)
+	}
+
+	file, err := os.Create("./ip" + ip + "/boot.ipxe")
+	if err != nil {
+		log.Fatalf("Unable to create a client's ipxe file:", err)
+		os.Exit(22)
 	}
 
 	defer file.Close()
 
-	file.Write(contentOfBoot4)
+	defaultIPXEContent, err := ioutil.ReadFile("etc/ipxe/ipxe-default-config.yaml")
+	if err != nil {
+		log.Fatalf("Unable to read the default ipxe config file:", err)
+		os.Exit(23)
+	}
+
+	file.Write(defaultIPXEContent)
 }
