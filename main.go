@@ -35,7 +35,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 	uuid := getInventory(mac)
 	fmt.Println(uuid)
 
-	getConf(ip)
+	createIPXE(ip)
 
 	w.Header().Add("Content-Type", "application/json")
 	resp, _ := json.Marshal(map[string]string{
@@ -137,7 +137,7 @@ func getIP(r *http.Request) string {
 	return clientIP
 }
 
-func getConf(ip string) {
+func createIPXE(ip string) {
 
 	err := os.Mkdir("ip"+ip, 0755)
 	if err != nil {
@@ -153,7 +153,7 @@ func getConf(ip string) {
 
 	defer file.Close()
 
-	defaultIPXEContent, err := ioutil.ReadFile("etc/ipxe/ipxe-default-config.yaml")
+	defaultIPXEContent, err := ioutil.ReadFile("/tmp/ipxe-default-config.yaml")
 	if err != nil {
 		log.Fatal("Unable to read the default ipxe config file:", err)
 		os.Exit(23)
