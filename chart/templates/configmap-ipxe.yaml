@@ -2,10 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ipxe-default-config
-  labels:
-    {{- include "ipxe-service.labels" . | nindent 4 }}
 data:
   ipxe-default-config: |
+    ---
     \#!ipxe
     
     set base-url http://45.86.152.1/ipxe
