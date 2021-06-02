@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	inv "k8s-inventory/api/v1alpha1"
 	mreq1 "k8s-machine-requests/api/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -20,7 +21,7 @@ import (
 func main() {
 	http.HandleFunc("/ipxe", getChain)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
-		log.Fatal("Failed to start IPXE Server")
+		log.Fatal("Failed to start IPXE Server:", err)
 		os.Exit(11)
 	}
 }
@@ -34,6 +35,8 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 	uuid := getInventory(mac)
 	fmt.Println(uuid)
 
+	createIPXE(ip)
+
 	w.Header().Add("Content-Type", "application/json")
 	resp, _ := json.Marshal(map[string]string{
 		"IP":   ip,
@@ -41,15 +44,12 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 		"UUID": uuid,
 	})
 	w.Write(resp)
-
-	createFile()
-
 }
 
 func createClient() client.Client {
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		log.Fatal("Failed to create a client", err)
+		log.Fatalf("Failed to create a client:", err)
 		os.Exit(19)
 	}
 	return cl
@@ -59,7 +59,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("test1")
 
 	if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("unable to add registered types machine request to client scheme")
+		log.Fatal("Unable to add registered types machine request to client scheme:", err)
 		os.Exit(12)
 	}
 	fmt.Println("test1")
@@ -69,7 +69,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	var mreqs mreq1.MachineRequestList
 	err := cl.List(context.Background(), &mreqs, client.InNamespace("default"))
 	if err != nil {
-		log.Fatal("Failed to list machine requests in namespace default")
+		log.Fatal("Failed to list machine requests in namespace default:", err)
 		os.Exit(14)
 	}
 
@@ -78,7 +78,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 
 func getInventory(mac string) string {
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("unable to add registered types inventory to client scheme", err)
+		log.Fatal("Unable to add registered types inventory to client scheme:", err)
 		os.Exit(15)
 	}
 
@@ -89,7 +89,7 @@ func getInventory(mac string) string {
 	var inventory inv.InventoryList
 	err := cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"macAddr": mac})
 	if err != nil {
-		log.Fatal("Failed to list crds netdata in namespace default", err)
+		log.Fatal("Failed to list crds netdata in namespace default:", err)
 		os.Exit(17)
 	}
 
@@ -99,7 +99,7 @@ func getInventory(mac string) string {
 
 func getNetdata(ip string) string {
 	if err := netdata.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types netdata to client scheme", err)
+		log.Fatal("Unable to add registered types netdata to client scheme:", err)
 		os.Exit(18)
 	}
 
@@ -108,7 +108,7 @@ func getNetdata(ip string) string {
 	var crds netdata.NetdataList
 	err := cl.List(context.Background(), &crds, client.InNamespace("default"), client.MatchingLabels{"ipv4": ip})
 	if err != nil {
-		log.Fatal("Failed to list crds netdata in namespace default", err)
+		log.Fatal("Failed to list crds netdata in namespace default:", err)
 		os.Exit(20)
 	}
 
@@ -120,7 +120,7 @@ func getNetdata(ip string) string {
 	if len(crds.Items) > 0 {
 		clientMACAddr = crds.Items[0].Spec.MACAddress
 	} else {
-		log.Fatalf("not found netdata for ipv4 %s", ip)
+		log.Fatalf("Not found netdata for ipv4 %s:", ip)
 		os.Exit(33)
 	}
 	return clientMACAddr
@@ -137,17 +137,27 @@ func getIP(r *http.Request) string {
 	return clientIP
 }
 
-func createFile() {
+func createIPXE(ip string) {
 
-	contentOfBoot4 := []byte("#!ipxe\n\nset base-url http://45.86.152.1/ipxe\nkernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs\n")
-
-	file, err := os.Create("boot4")
+	err := os.Mkdir("ip"+ip, 0755)
 	if err != nil {
-		fmt.Println("Unable to create file:", err)
-		os.Exit(1)
+		log.Fatal("Unable to create a client's ipxe directory:", err)
+		os.Exit(21)
+	}
+
+	file, err := os.Create("./ip" + ip + "/boot.ipxe")
+	if err != nil {
+		log.Fatal("Unable to create a client's ipxe file:", err)
+		os.Exit(22)
 	}
 
 	defer file.Close()
 
-	file.Write(contentOfBoot4)
+	defaultIPXEContent, err := ioutil.ReadFile("/tmp/ipxe-default-config")
+	if err != nil {
+		log.Fatal("Unable to read the default ipxe config file:", err)
+		os.Exit(23)
+	}
+
+	file.Write(defaultIPXEContent)
 }
