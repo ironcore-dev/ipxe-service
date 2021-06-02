@@ -153,7 +153,7 @@ func createIPXE(ip string) {
 
 	defer file.Close()
 
-	defaultIPXEContent, err := ioutil.ReadFile("/tmp/ipxe-default-config.yaml")
+	defaultIPXEContent, err := ioutil.ReadFile("/tmp/ipxe-default-config")
 	if err != nil {
 		log.Fatal("Unable to read the default ipxe config file:", err)
 		os.Exit(23)
