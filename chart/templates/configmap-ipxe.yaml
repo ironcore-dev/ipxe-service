@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ipxe-default-config
+  name: ipxe-service-config
 data:
-  ipxe-default-config: |
+  ignition-definition: "test"
+  ipxe-default: |
     ---
     \#!ipxe
     
