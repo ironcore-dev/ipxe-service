@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
-	"io/ioutil"
+	//"io/ioutil"
 	inv "k8s-inventory/api/v1alpha1"
 	mreq1 "k8s-machine-requests/api/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -29,21 +29,22 @@ func main() {
 func getChain(w http.ResponseWriter, r *http.Request) {
 
 	ip := getIP(r)
-	fmt.Println(ip)
+	//fmt.Println(ip)
 	mac := getNetdata(ip)
-	fmt.Println(mac)
-	uuid := getInventory(mac)
-	fmt.Println(uuid)
-
-	createIPXE(ip)
-
-	w.Header().Add("Content-Type", "application/json")
-	resp, _ := json.Marshal(map[string]string{
-		"IP":   ip,
-		"MAC":  mac,
-		"UUID": uuid,
-	})
-	w.Write(resp)
+	if mac == "" {
+		fmt.Printf("Not found MAC Address in Netdata for IPv4 %s\n", ip)
+	} else {
+		//fmt.Println(mac)
+		uuid := getInventory(mac)
+		if uuid == "" {
+			fmt.Printf("Not found MAC Address (%s) in Inventory\n", mac)
+			fmt.Println("Response default IPXE ConfigMap ...")
+			fmt.Fprintf(w, "#!ipxe\n\nset base-url http://%s/ipxe\nkernel ${base-url}\ninitrd ${base-url}\nappend ${cmdline}...\nboot\n", ip)
+		} else {
+			//fmt.Println(uuid)
+			fmt.Fprintf(w, "Not default ipxe config ...\n")
+		}
+	}
 }
 
 func createClient() client.Client {
@@ -93,7 +94,12 @@ func getInventory(mac string) string {
 		os.Exit(17)
 	}
 
-	clientUUID := inventory.Items[0].Spec.System.ID
+	var clientUUID string
+	if len(inventory.Items) > 0 {
+		clientUUID = inventory.Items[0].Spec.System.ID
+	} else {
+		return clientUUID
+	}
 	return clientUUID
 }
 
@@ -120,8 +126,7 @@ func getNetdata(ip string) string {
 	if len(crds.Items) > 0 {
 		clientMACAddr = crds.Items[0].Spec.MACAddress
 	} else {
-		log.Fatalf("Not found netdata for ipv4 %s:", ip)
-		os.Exit(33)
+		return clientMACAddr
 	}
 	return clientMACAddr
 }
@@ -137,7 +142,7 @@ func getIP(r *http.Request) string {
 	return clientIP
 }
 
-func createIPXE(ip string) {
+/*func createIPXE(ip string) {
 
 	err := os.Mkdir("ip"+ip, 0755)
 	if err != nil {
@@ -160,4 +165,4 @@ func createIPXE(ip string) {
 	}
 
 	file.Write(defaultIPXEContent)
-}
+}*/
