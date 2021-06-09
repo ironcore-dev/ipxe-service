@@ -4,7 +4,7 @@ import (
 	"context"
 	//"encoding/json"
 	"fmt"
-	//"io/ioutil"
+	"io/ioutil"
 	inv "k8s-inventory/api/v1alpha1"
 	mreq1 "k8s-machine-requests/api/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -21,7 +21,7 @@ import (
 func main() {
 	http.HandleFunc("/ipxe", getChain)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
-		log.Fatal("Failed to start IPXE Server:", err)
+		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
 	}
 }
@@ -29,20 +29,22 @@ func main() {
 func getChain(w http.ResponseWriter, r *http.Request) {
 
 	ip := getIP(r)
-	//fmt.Println(ip)
 	mac := getNetdata(ip)
 	if mac == "" {
 		fmt.Printf("Not found MAC Address in Netdata for IPv4 %s\n", ip)
 	} else {
-		//fmt.Println(mac)
 		uuid := getInventory(mac)
 		if uuid == "" {
 			fmt.Printf("Not found MAC Address (%s) in Inventory\n", mac)
 			fmt.Println("Response default IPXE ConfigMap ...")
-			fmt.Fprintf(w, "#!ipxe\n\nset base-url http://%s/ipxe\nkernel ${base-url}\ninitrd ${base-url}\nappend ${cmdline}...\nboot\n", ip)
+			getDefaultIPXE, err := ioutil.ReadFile("./etc/ipxe-default")
+			if err != nil {
+				log.Fatal("Unable to read the default ipxe config file", err)
+				os.Exit(23)
+			}
+			fmt.Fprintf(w, string(getDefaultIPXE))
 		} else {
-			//fmt.Println(uuid)
-			fmt.Fprintf(w, "Not default ipxe config ...\n")
+			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
 		}
 	}
 }
@@ -141,28 +143,3 @@ func getIP(r *http.Request) string {
 
 	return clientIP
 }
-
-/*func createIPXE(ip string) {
-
-	err := os.Mkdir("ip"+ip, 0755)
-	if err != nil {
-		log.Fatal("Unable to create a client's ipxe directory:", err)
-		os.Exit(21)
-	}
-
-	file, err := os.Create("./ip" + ip + "/boot.ipxe")
-	if err != nil {
-		log.Fatal("Unable to create a client's ipxe file:", err)
-		os.Exit(22)
-	}
-
-	defer file.Close()
-
-	defaultIPXEContent, err := ioutil.ReadFile("/tmp/ipxe-default-config")
-	if err != nil {
-		log.Fatal("Unable to read the default ipxe config file:", err)
-		os.Exit(23)
-	}
-
-	file.Write(defaultIPXEContent)
-}*/
