@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	//"encoding/json"
 	"fmt"
 	"io/ioutil"
 	inv "k8s-inventory/api/v1alpha1"
@@ -29,15 +28,17 @@ func main() {
 func getChain(w http.ResponseWriter, r *http.Request) {
 
 	ip := getIP(r)
+	log.Printf("Clien's IP from request: %s", ip)
 	mac := getNetdata(ip)
+	log.Printf("Client's MAC Address from Netdata: %s", mac)
 	if mac == "" {
-		fmt.Printf("Not found MAC Address in Netdata for IPv4 %s\n", ip)
+		log.Printf("Not found client's MAC Address in Netdata for IPv4 (%s): ", ip)
 	} else {
 		uuid := getInventory(mac)
 		if uuid == "" {
-			fmt.Printf("Not found MAC Address (%s) in Inventory\n", mac)
-			fmt.Println("Response default IPXE ConfigMap ...")
-			getDefaultIPXE, err := ioutil.ReadFile("./etc/ipxe-default")
+			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
+			log.Println("Response the default IPXE ConfigMap ...")
+			getDefaultIPXE, err := ioutil.ReadFile("/etc/ipxe-service/ipxe-default")
 			if err != nil {
 				log.Fatal("Unable to read the default ipxe config file", err)
 				os.Exit(23)
@@ -52,7 +53,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 func createClient() client.Client {
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		log.Fatalf("Failed to create a client:", err)
+		log.Fatal("Failed to create a client:", err)
 		os.Exit(19)
 	}
 	return cl
