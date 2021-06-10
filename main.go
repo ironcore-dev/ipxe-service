@@ -19,7 +19,7 @@ import (
 
 func main() {
 	http.HandleFunc("/ipxe", getChain)
-	if err := http.ListenAndServe(":80", nil); err != nil {
+	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
 	}
@@ -38,7 +38,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 		if uuid == "" {
 			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
 			log.Println("Response the default IPXE ConfigMap ...")
-			getDefaultIPXE, err := ioutil.ReadFile("/etc/ipxe-default")
+			getDefaultIPXE, err := ioutil.ReadFile("/etc/ipxe-service/ipxe-default")
 			if err != nil {
 				log.Fatal("Unable to read the default ipxe config file", err)
 				os.Exit(23)
