@@ -5,7 +5,6 @@ metadata:
 data:
   ignition-definition: "test"
   ipxe-default: |
-    ---
     \#!ipxe
     
     set base-url http://45.86.152.1/ipxe
