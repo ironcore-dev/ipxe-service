@@ -52,7 +52,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 func createClient() client.Client {
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		log.Fatalf("Failed to create a client:", err)
+		log.Fatal("Failed to create a client:", err)
 		os.Exit(19)
 	}
 	return cl
