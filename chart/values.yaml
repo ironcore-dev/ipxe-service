@@ -12,10 +12,10 @@ labels:
   app: ipxe
 
 image:
-  repository: localhost/ipxe-service
+  repository: ipxe-service
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.3"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
