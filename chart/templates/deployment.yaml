@@ -24,6 +24,9 @@ spec:
       - name: remotek8s
         configMap:
           name: k8sconfig
+      - name: ipxe-service-config
+        configMap:
+          name: ipxe-service-config
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -32,10 +35,10 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}A
+        - name: {{ .Chart.Name }}
           volumeMounts:
-          - name: netdata-config
-            mountPath: /etc/manager
+          - name: ipxe-service-config
+            mountPath: /etc/ipxe-service
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
