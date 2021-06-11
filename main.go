@@ -44,7 +44,7 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Not found inventory uuid for mac %s", mac)
 			log.Printf("Render default ignition from configmap %s", mac)
 			// read ignition-definition:
-			dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition")
+			dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
 			if err != nil {
 				log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition. Error: %+v", err)
 			}
