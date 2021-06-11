@@ -46,7 +46,7 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 			// read ignition-definition:
 			dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
 			if err != nil {
-				log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition. Error: %+v", err)
+				log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition.yaml Error: %+v", err)
 			}
 			// render by butane to json
 			options := common.TranslateBytesOptions{}
