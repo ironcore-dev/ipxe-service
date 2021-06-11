@@ -33,9 +33,9 @@ $ curl -s 127.0.0.1:8082/ipxe | jq .
 ### Test with minikube
 
 ```
-$ kubectl create -f ./config/crd/bases/machine.onmetal.de_inventories.yaml -f ./config/crd/bases/machine.onmetal.de_netdata.yaml
-$ kubectl create -f ./config/samples/machine.onmetal.de_v1_netdata.yaml -f ./config/samples/machine_v1alpha1_inventory.yaml
-$ make test
+kubectl create -f ./config/crd/bases/machine.onmetal.de_inventories.yaml -f ./config/crd/bases/machine.onmetal.de_netdata.yaml
+kubectl create -f ./config/samples/machine.onmetal.de_v1_netdata.yaml
+make test
 ```
 ## Exit codes
 

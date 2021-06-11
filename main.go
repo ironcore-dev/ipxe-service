@@ -4,37 +4,71 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	inv "k8s-inventory/api/v1alpha1"
-	mreq1 "k8s-machine-requests/api/v1alpha1"
-	"k8s.io/client-go/kubernetes/scheme"
 	"log"
 	"net"
 	"net/http"
-	netdata "netdata/api/v1"
 	"os"
+	"strings"
+
+	buconfig "github.com/coreos/butane/config"
+	"github.com/coreos/butane/config/common"
+	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
+	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
+	netdata "github.com/onmetal/netdata/api/v1"
+
+	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"strings"
 )
 
 func main() {
 	http.HandleFunc("/ipxe", getChain)
+	http.HandleFunc("/ignition", getIgnition)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
 	}
 }
 
-func getChain(w http.ResponseWriter, r *http.Request) {
+func getIgnition(w http.ResponseWriter, r *http.Request) {
+	mac := getMac(r)
+	if mac == "" {
+		log.Printf("Not found mac in netdata, %s", " returned 204")
+		http.Error(w, "not found netdata", http.StatusNoContent)
+	} else {
+		uuid := getUUIDbyInventory(mac)
+		if uuid == "" {
+			log.Printf("Not found inventory uuid for mac %s", mac)
+			log.Printf("Render default ignition from configmap %s", mac)
+			// read ignition-definition:
+			dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition")
+			if err != nil {
+				log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition. Error: %+v", err)
+			}
+			// render by butane to json
+			options := common.TranslateBytesOptions{}
+			dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
+			// return json
+			fmt.Fprintf(w, string(dataOut))
+		}
+	}
+}
 
+func getMac(r *http.Request) string {
 	ip := getIP(r)
 	log.Printf("Clien's IP from request: %s", ip)
-	mac := getNetdata(ip)
+	mac := getMACbyNetdata(ip)
 	log.Printf("Client's MAC Address from Netdata: %s", mac)
 	if mac == "" {
 		log.Printf("Not found client's MAC Address in Netdata for IPv4 (%s): ", ip)
-	} else {
-		uuid := getInventory(mac)
+	}
+	return mac
+}
+
+func getChain(w http.ResponseWriter, r *http.Request) {
+	mac := getMac(r)
+	if mac != "" {
+		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
 			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
 			log.Println("Response the default IPXE ConfigMap ...")
@@ -60,13 +94,11 @@ func createClient() client.Client {
 }
 
 func getMachineRequest(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("test1")
 
 	if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types machine request to client scheme:", err)
 		os.Exit(12)
 	}
-	fmt.Println("test1")
 
 	cl := createClient()
 
@@ -77,10 +109,10 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 		os.Exit(14)
 	}
 
-	fmt.Printf("machine requests %+v", mreqs)
+	log.Printf("machine requests %+v", mreqs)
 }
 
-func getInventory(mac string) string {
+func getUUIDbyInventory(mac string) string {
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme:", err)
 		os.Exit(15)
@@ -91,22 +123,22 @@ func getInventory(mac string) string {
 	mac = strings.ReplaceAll(mac, ":", "")
 
 	var inventory inv.InventoryList
-	err := cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"macAddr": mac})
+	err := cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"machine.onmetal.de/mac-address-" + mac: ""})
 	if err != nil {
-		log.Fatal("Failed to list crds netdata in namespace default:", err)
+		log.Fatal("Failed to list crds inventories in namespace default:", err)
 		os.Exit(17)
 	}
 
 	var clientUUID string
 	if len(inventory.Items) > 0 {
 		clientUUID = inventory.Items[0].Spec.System.ID
-	} else {
-		return clientUUID
 	}
+	log.Printf("search inventories for mac: %+v", clientUUID)
+
 	return clientUUID
 }
 
-func getNetdata(ip string) string {
+func getMACbyNetdata(ip string) string {
 	if err := netdata.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types netdata to client scheme:", err)
 		os.Exit(18)
@@ -142,5 +174,6 @@ func getIP(r *http.Request) string {
 
 	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 
+	log.Printf("Ip is %s", clientIP)
 	return clientIP
 }

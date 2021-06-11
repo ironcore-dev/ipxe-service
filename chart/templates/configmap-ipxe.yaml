@@ -3,10 +3,17 @@ kind: ConfigMap
 metadata:
   name: ipxe-service-config
 data:
-  ignition-definition: "test"
+  ignition-definition.yaml: |
+    variant: fcos
+    version: 1.1.0
+    passwd:
+      users:
+        - name: core
+          ssh_authorized_keys:
+            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDmLUNS/nKfTxX95sOJB57qrKOqNggYZR/PUzeKgXVmpqWPfL33jh1c02RdJm028TcRLKRpu+HHOf4CeXZf52qOgqETVNwPa12LGR0u2ucSrAIxWqhuOr/P2A35rp7BAmpNFWS0PIUr6IIPapbe8tVvuVgrlJga03LuTSH8XuHutN0WWUi2l0qFze+3+RqmhGTrCGIAM2XBC1LgnOobOMYDNxc5HD7Hai8frxoGuXVBA2yOIgUin4DYNV/8Fo4vBhAPjqzMNoWKHY01cySXYbvuTZP0jccoMHwECVIwOCijOettHRN32wmbpuBtGdh6DUwLo8iIGOV948oWe/YQPC4D dima@fobos2
   ipxe-default: |
     \#!ipxe
-    
+
     set base-url http://45.86.152.1/ipxe
     kernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs gl.url=${base-url}/root.squashfs gl.live=1 ip=dhcp console=ttyS1,115200n8 console=tty0 earlyprintk=ttyS1,115200n8 consoleblank=0 ignition.firstboot=1 ignition.config.url=${base-url}/tmp.ign ignition.platform.id=metal
     initrd ${base-url}/rootfs.initrd
