@@ -15,6 +15,7 @@ import (
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	netdata "github.com/onmetal/netdata/api/v1"
+	"gopkg.in/yaml.v1"
 
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,15 +23,37 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "ok")
-	})
+	http.HandleFunc("/", ok200)
 	http.HandleFunc("/ipxe", getChain)
 	http.HandleFunc("/ignition", getIgnition)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
 	}
+}
+
+func ok200(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "ok")
+}
+
+type dataconf struct {
+	NetdataNS        string `yaml:"netdata-namespace"`
+	MachineRequestNS string `yaml:"machine-request-namespace"`
+	InventoryNS      string `yaml:"inventory-namespace"`
+}
+
+func (c *dataconf) getConf() *dataconf {
+	yamlFile, err := ioutil.ReadFile("/etc/ipxe-service/config.yaml")
+	if err != nil {
+		log.Fatalf("yamlFile.Get err   #%v ", err)
+		os.Exit(21)
+	}
+	err = yaml.Unmarshal(yamlFile, c)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
+	log.Printf("Config is #%+v ", c)
+	return c
 }
 
 func getIgnition(w http.ResponseWriter, r *http.Request) {
@@ -97,6 +120,8 @@ func createClient() client.Client {
 }
 
 func getMachineRequest(w http.ResponseWriter, r *http.Request) {
+	var conf dataconf
+	conf.getConf()
 
 	if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types machine request to client scheme:", err)
@@ -106,7 +131,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	cl := createClient()
 
 	var mreqs mreq1.MachineRequestList
-	err := cl.List(context.Background(), &mreqs, client.InNamespace("default"))
+	err := cl.List(context.Background(), &mreqs, client.InNamespace(conf.MachineRequestNS))
 	if err != nil {
 		log.Fatal("Failed to list machine requests in namespace default:", err)
 		os.Exit(14)
@@ -116,6 +141,8 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUUIDbyInventory(mac string) string {
+	var conf dataconf
+	conf.getConf()
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme:", err)
 		os.Exit(15)
@@ -126,7 +153,7 @@ func getUUIDbyInventory(mac string) string {
 	mac = strings.ReplaceAll(mac, ":", "")
 
 	var inventory inv.InventoryList
-	err := cl.List(context.Background(), &inventory, client.InNamespace("default"), client.MatchingLabels{"machine.onmetal.de/mac-address-" + mac: ""})
+	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{"machine.onmetal.de/mac-address-" + mac: ""})
 	if err != nil {
 		log.Fatal("Failed to list crds inventories in namespace default:", err)
 		os.Exit(17)
@@ -142,6 +169,9 @@ func getUUIDbyInventory(mac string) string {
 }
 
 func getMACbyNetdata(ip string) string {
+	var conf dataconf
+	conf.getConf()
+
 	if err := netdata.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types netdata to client scheme:", err)
 		os.Exit(18)
@@ -150,7 +180,7 @@ func getMACbyNetdata(ip string) string {
 	cl := createClient()
 
 	var crds netdata.NetdataList
-	err := cl.List(context.Background(), &crds, client.InNamespace("default"), client.MatchingLabels{"ipv4": ip})
+	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{"ipv4": ip})
 	if err != nil {
 		log.Fatal("Failed to list crds netdata in namespace default:", err)
 		os.Exit(20)

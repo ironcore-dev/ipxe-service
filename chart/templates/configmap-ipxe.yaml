@@ -3,6 +3,10 @@ kind: ConfigMap
 metadata:
   name: ipxe-service-config
 data:
+  config.yaml: |
+    netdata-namespace: default
+    machine-reject-namespace: default
+    inventory-namespace: default
   ignition-definition.yaml: |
     variant: fcos
     version: 1.3.0
