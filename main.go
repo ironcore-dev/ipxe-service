@@ -99,7 +99,7 @@ type pasrseyaml struct {
 
 func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 
-	yamlFile, err := ioutil.ReadFile("/etc/ipxe-service//ipxe-default.yaml")
+	yamlFile, err := ioutil.ReadFile("/etc/ipxe-service/ipxe-default.yaml")
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
