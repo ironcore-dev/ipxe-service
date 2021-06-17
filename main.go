@@ -94,6 +94,7 @@ func getMac(r *http.Request) string {
 type pasrseyaml struct {
 	BaseUrl string `yaml:"base-url"`
 	Kernel  string `yaml:"kernel"`
+	Initrd  string `yaml:"initrd"`
 }
 
 func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
@@ -117,17 +118,11 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 		if uuid == "" {
 			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
 			log.Println("Response the default IPXE ConfigMap ...")
-			//getDefaultIPXE, err := ioutil.ReadFile("/etc/ipxe-service/ipxe-default")
 
 			var c pasrseyaml
 			c.getIpxeConf()
-			fmt.Fprintf(w, "set base-url %s\n", c.BaseUrl)
+			fmt.Fprintf(w, "#!ipxe\n\nset base-url %s\nkernel %s\ninitrd %s\nboot\n", c.BaseUrl, c.Kernel, c.Initrd)
 
-			if err != nil {
-				log.Fatal("Unable to read the default ipxe config file", err)
-				os.Exit(23)
-			}
-			fmt.Fprintf(w, string(getDefaultIPXE))
 		} else {
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
 		}
