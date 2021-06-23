@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"text/template"
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
@@ -121,7 +122,15 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 
 			var c pasrseyaml
 			c.getIpxeConf()
-			fmt.Fprintf(w, "#!ipxe\n\nset base-url %s\nkernel %s\ninitrd %s\nboot\n", c.BaseUrl, c.Kernel, c.Initrd)
+			tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
+			if err != nil {
+				log.Println("Couldn't parse IPXE template file ...", err)
+			}
+
+			err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
+			if err != nil {
+				log.Println("Couldn't execute IPXE template file ...", err)
+			}
 
 		} else {
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
