@@ -5,30 +5,40 @@
 ## Go run
 
 ```bash
-$ go run main.go
+go run main.go
 ```
 
 or
 
 ```bash
-$ make run
+make run
 ```
 
 ## HTTP Request
 
 ```bash
-$ curl 127.0.0.1:8082
-404 page not found
+curl 127.0.0.1:8082
+ok
 ```
 
+
 ```bash
-$ curl -s 127.0.0.1:8082/ipxe | jq .
-{
-  "IP": "127.0.0.1",
-  "MAC": "16:bf:7b:2f:8e:9c",
-  "UUID": "a967954c-3475-11b2-a85c-84d8b4f8cd2d"
-}
+curl 127.0.0.1:8082/ipxe
+#!ipxe
+
+set base-url http://45.86.152.1/ipxe
+kernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs gl.url=${base-url}/root.squashfs gl.live=1 ip=dhcp console=ttyS1,115200n8 console=tty0 earlyprintk=ttyS1,115200n8 consoleblank=0 ignition.firstboot=1 ignition.config.url=${base-url}/ip${net0/ip}/ignition.json ignition.platform.id=metal
+initrd ${base-url}/rootfs.initrd
+
+boot
 ```
+
+```
+curl 127.0.0.1:8082/ignition
+
+{"ignition":{"version":"3.1.0"},"passwd":{"users":[{"name":"core","sshAuthorizedKeys":["ssh-rsa AAAAB3NzaC1yc2EAAAADAV948oWe/YQPC4D key@key"]}]}}
+```
+
 
 ### Test with minikube
 

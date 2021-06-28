@@ -34,7 +34,7 @@ func main() {
 }
 
 func ok200(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "ok")
+	fmt.Fprintf(w, "ok\n")
 }
 
 type dataconf struct {
@@ -208,7 +208,10 @@ func getMACbyNetdata(ip string) string {
 	cl := createClient()
 
 	var crds netdata.NetdataList
-	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{"ipv4": ip})
+	searchlabel := "ip-" + strings.ReplaceAll(ip, ".", "_")
+	log.Printf("Search label %s", searchlabel)
+
+	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{searchlabel: ""})
 	if err != nil {
 		log.Fatal("Failed to list crds netdata in namespace default:", err)
 		os.Exit(20)
