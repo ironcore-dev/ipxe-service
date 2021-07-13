@@ -5,6 +5,8 @@
 replicaCount: 1
 fullname: ipxe-service
 
+netdataNamespace: onmetal
+
 selectorLabels:
   app: ipxe
 
@@ -30,7 +32,11 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
+podAnnotations:
+  prometheus.io/path: /metrics
+  prometheus.io/port: "8082"
+  prometheus.io/scheme: http
+  prometheus.io/scrape: "true"
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -49,7 +55,12 @@ service:
 
 ingress:
   enabled: true
-  annotations: {}
+  annotations:
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ~* "^/metrics" {
+          deny all;
+          return 403;
+      }
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -176,3 +187,4 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+logHandlerUrl: http://machine-event-handler.onmetal.svc.cluster.local/api/v1/event

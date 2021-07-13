@@ -4,7 +4,7 @@ metadata:
   name: ipxe-service-config
 data:
   config.yaml: |
-    netdata-namespace: default
+    netdata-namespace: {{ .Values.netdataNamespace }}
     machine-reject-namespace: default
     inventory-namespace: default
   ignition-definition.yaml: |
@@ -210,8 +210,8 @@ data:
   ipxe-template: |
     #!ipxe
 
-    set base-url {{ .BaseUrl }}
-    kernel {{ .Kernel }}
-    initrd {{ .Initrd }}
+    set base-url {{ "{{ .BaseUrl }}" }}
+    kernel {{ "{{ .Kernel }}" }}
+    initrd {{ "{{ .Initrd }}" }}
 
     boot

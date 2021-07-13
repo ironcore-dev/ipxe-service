@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,23 +12,67 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"time"
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
+	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
 	netdata "github.com/onmetal/netdata/api/v1"
 	"gopkg.in/yaml.v1"
 
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+const (
+	timeoutSecond = 5 * time.Second
+)
+
+type httpClient struct {
+	*http.Client
+
+	log logger.Logger
+}
+
+type event struct {
+	UUID    string `json:"uuid"`
+	Reason  string `json:"reason,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+var (
+	requestIPXEDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "ipxe_request_duration_seconds",
+		Help:    "Histogram for the runtime of a simple ipxe(getChain) function.",
+		Buckets: prometheus.LinearBuckets(0.01, 0.05, 10),
+	},
+		[]string{"mac"},
+	)
+	requestIGNITIONDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "ignition_request_duration_seconds",
+		Help:    "Histogram for the runtime of a simple ignition(getIgnition) function.",
+		Buckets: prometheus.LinearBuckets(0.01, 0.05, 10),
+	},
+		[]string{"mac"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(requestIPXEDuration)
+	prometheus.MustRegister(requestIGNITIONDuration)
+}
 
 func main() {
 	http.HandleFunc("/", ok200)
 	http.HandleFunc("/ipxe", getChain)
 	http.HandleFunc("/ignition", getIgnition)
+	http.Handle("/metrics", promhttp.Handler())
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
@@ -57,8 +103,65 @@ func (c *dataconf) getConf() *dataconf {
 	return c
 }
 
+func newHttp() *httpClient {
+	client := &http.Client{Timeout: timeoutSecond}
+	l := logger.New()
+	return &httpClient{
+		Client: client,
+		log:    l,
+	}
+}
+
+func (h *httpClient) postRequest(requestBody []byte) ([]byte, error) {
+	var url string
+	if os.Getenv("HANDLER_URL") == "" {
+		url = "http://localhost:8088/api/v1/event"
+	} else {
+		url = os.Getenv("HANDLER_URL")
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return nil, err
+	}
+	token, err := getToken()
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", token)
+	resp, err := h.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
+func getToken() (string, error) {
+	if _, err := os.Stat("/var/run/secrets/kubernetes.io/serviceaccount/token"); os.IsNotExist(err) {
+		return "", err
+	}
+	data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
 func getIgnition(w http.ResponseWriter, r *http.Request) {
-	mac := getMac(r)
+	var mac string
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		requestIGNITIONDuration.WithLabelValues(mac).Observe(v)
+	}))
+
+	defer func() {
+		timer.ObserveDuration()
+	}()
+
+	mac = getMac(r)
 	if mac == "" {
 		log.Printf("Not found mac in netdata, %s", " returned 204")
 		http.Error(w, "not found netdata", http.StatusNoContent)
@@ -77,6 +180,21 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 			dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
 			// return json
 			fmt.Fprintf(w, string(dataOut))
+		} else {
+			ip := getIP(r)
+			e := &event{
+				UUID:    uuid,
+				Reason:  "Ignition",
+				Message: fmt.Sprintf("Ignition request for ip %s and  mac %s ", ip, mac),
+			}
+			h := newHttp()
+			requestBody, _ := json.Marshal(e)
+			resp, err := h.postRequest(requestBody)
+			if err != nil {
+				h.log.Info("can't send a request", err)
+				fmt.Println(string(resp))
+			}
+			// TODO render specified ignition
 		}
 	}
 }
@@ -113,7 +231,17 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 }
 
 func getChain(w http.ResponseWriter, r *http.Request) {
-	mac := getMac(r)
+	var mac string
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		requestIPXEDuration.WithLabelValues(mac).Observe(v)
+	}))
+	defer func() {
+		timer.ObserveDuration()
+	}()
+
+	mac = getMac(r)
+	ip := getIP(r)
+
 	if mac != "" {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
@@ -133,7 +261,20 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else {
+			e := &event{
+				UUID:    uuid,
+				Reason:  "IPXE",
+				Message: fmt.Sprintf("IPXE request for ip %s and  mac %s ", ip, mac),
+			}
+			h := newHttp()
+			requestBody, _ := json.Marshal(e)
+			resp, err := h.postRequest(requestBody)
+			if err != nil {
+				h.log.Info("can't send a request", err)
+				fmt.Println(string(resp))
+			}
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
+			// TODO render specified ipxe
 		}
 	}
 }
@@ -224,8 +365,6 @@ func getMACbyNetdata(ip string) string {
 	var clientMACAddr string
 	if len(crds.Items) > 0 {
 		clientMACAddr = crds.Items[0].Spec.MACAddress
-	} else {
-		return clientMACAddr
 	}
 	return clientMACAddr
 }
