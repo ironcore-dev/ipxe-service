@@ -16,6 +16,7 @@ import (
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
+	k8simage "github.com/onmetal/k8s-image/api/v1alpha1"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
@@ -87,6 +88,7 @@ type dataconf struct {
 	NetdataNS        string `yaml:"netdata-namespace"`
 	MachineRequestNS string `yaml:"machine-request-namespace"`
 	InventoryNS      string `yaml:"inventory-namespace"`
+	K8SImageNS       string `yaml:"k8simage-namespace"`
 }
 
 func (c *dataconf) getConf() *dataconf {
@@ -230,6 +232,33 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 	return c
 }
 
+func getIPXEbyK8SImage() {
+
+	var conf dataconf
+	conf.getConf()
+	if err := inv.AddToScheme(scheme.Scheme); err != nil {
+		log.Fatal("Unable to add registered types inventory to client scheme:", err)
+		os.Exit(15)
+	}
+
+	cl := createClient()
+
+	var k8simagecrd k8simage.ImageList
+	err := cl.List(context.Background(), &k8simagecrd, client.InNamespace(conf.K8SImageNS))
+	if err != nil {
+		log.Fatal("Failed to list K8S-Imege crds inventories in namespace default:", err)
+		os.Exit(17)
+	}
+
+	var k8simageTest string
+	if len(k8simagecrd.Items) > 0 {
+		k8simageTest = k8simagecrd.Items[0].Spec.Kernel
+	}
+
+	log.Printf("TEST - %+v", k8simageTest)
+
+}
+
 func getChain(w http.ResponseWriter, r *http.Request) {
 	var mac string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -241,6 +270,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 
 	mac = getMac(r)
 	ip := getIP(r)
+	getIPXEbyK8SImage()
 
 	if mac != "" {
 		uuid := getUUIDbyInventory(mac)
