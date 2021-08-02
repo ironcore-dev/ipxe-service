@@ -65,13 +65,13 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: ipxe-service.local
+    - host: ipxe-service.local.ns1.fra3.infra.onmetal.de
       paths:
         - path: /
   tls:
     - secretName: ipxe-service-tls
       hosts:
-        - ipxe-service.local
+        - ipxe-service.local.ns1.fra3.infra.onmetal.de
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

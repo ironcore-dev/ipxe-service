@@ -1,6 +1,8 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
 metadata:
   name: selfsigned
 spec:
   selfSigned: {}
+{{- end }}

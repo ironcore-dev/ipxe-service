@@ -1,3 +1,5 @@
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -9,7 +11,9 @@ spec:
   issuerRef:
     kind: Issuer
     name: selfsigned
-  commonName: "ipxe-service.local.ns1.fra3.infra.onmetal.de"
+  commonName: {{ .host }}
   isCA: true
   dnsNames:
-  - "ipxe-service.local.ns1.fra3.infra.onmetal.de"
+  - {{ .host }}
+{{- end }}
+{{- end }}
