@@ -165,13 +165,13 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 
 	mac = getMac(r)
 	if mac == "" {
-		log.Printf("Not found mac in netdata, %s", " returned 204")
-		http.Error(w, "not found netdata", http.StatusNoContent)
+		log.Printf("Not found MAC in Netdata, %s", " returned 204")
+		http.Error(w, "Not found netdata", http.StatusNoContent)
 	} else {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
-			log.Printf("Not found inventory uuid for mac %s", mac)
-			log.Printf("Render default ignition from configmap %s", mac)
+			log.Printf("Not found inventory UUID for MAC %s", mac)
+			log.Printf("Render default Ignition from ConfigMap %s", mac)
 			// read ignition-definition:
 			dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
 			if err != nil {
@@ -236,7 +236,7 @@ func getIPXEbyK8SImage() {
 	var conf dataconf
 	conf.getConf()
 
-	if err := k8simage.AddToScheme(scheme.Scheme); err != nil {
+	if err := k8simages.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 		os.Exit(15)
 	}
@@ -254,10 +254,12 @@ func getIPXEbyK8SImage() {
 	//var k8simageTest string
 	if len(k8simagecrds.Items) > 0 {
 		log.Printf("TEST - %+v", k8simagecrds)
-		//k8simageTest = k8simagecrd.Items[0].Spec.Initrd.Url
+		//k8simageTest = k8simagecrds.Items[0].Spec.Initrd.Url
 	}
 
 	//log.Printf("TEST - %+v", k8simageTest)
+
+	//return ...
 
 }
 
@@ -272,7 +274,6 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 
 	mac = getMac(r)
 	ip := getIP(r)
-	getIPXEbyK8SImage()
 
 	if mac != "" {
 		uuid := getUUIDbyInventory(mac)
@@ -296,17 +297,30 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			e := &event{
 				UUID:    uuid,
 				Reason:  "IPXE",
-				Message: fmt.Sprintf("IPXE request for ip %s and  mac %s ", ip, mac),
+				Message: fmt.Sprintf("IPXE request for IP %s and  MAC %s ", ip, mac),
 			}
 			h := newHttp()
 			requestBody, _ := json.Marshal(e)
 			resp, err := h.postRequest(requestBody)
 			if err != nil {
-				h.log.Info("can't send a request", err)
+				h.log.Info("Can't send a request", err)
 				fmt.Println(string(resp))
 			}
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
+
 			// TODO render specified ipxe
+			var c pasrseyaml
+			c.getIpxeConf()
+			tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
+			if err != nil {
+				log.Println("Couldn't parse IPXE template file ...", err)
+			}
+
+			err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
+			if err != nil {
+				log.Println("Couldn't execute IPXE template file ...", err)
+			}
+
 		}
 	}
 }
@@ -338,7 +352,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 		os.Exit(14)
 	}
 
-	log.Printf("machine requests %+v", mreqs)
+	log.Printf("Machine requests %+v", mreqs)
 }
 
 func getUUIDbyInventory(mac string) string {
@@ -365,7 +379,7 @@ func getUUIDbyInventory(mac string) string {
 	if len(inventory.Items) > 0 {
 		clientUUID = inventory.Items[0].Spec.System.ID
 	}
-	log.Printf("search inventories for mac: %+v", clientUUID)
+	log.Printf("Search inventories for MAC: %+v", clientUUID)
 
 	return clientUUID
 }
@@ -383,7 +397,7 @@ func getMACbyNetdata(ip string) string {
 
 	var crds netdata.NetdataList
 	searchlabel := "ip-" + strings.ReplaceAll(ip, ".", "_")
-	log.Printf("Search label %s", searchlabel)
+	log.Printf("Search label: %s", searchlabel)
 
 	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{searchlabel: ""})
 	if err != nil {
@@ -410,6 +424,5 @@ func getIP(r *http.Request) string {
 
 	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 
-	log.Printf("Ip is %s", clientIP)
 	return clientIP
 }
