@@ -233,21 +233,22 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 }
 
 func getIPXEbyK8SImage() {
-
 	var conf dataconf
 	conf.getConf()
-	if err := inv.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types inventory to client scheme:", err)
+
+	if err := k8simage.AddToScheme(scheme.Scheme); err != nil {
+		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 		os.Exit(15)
 	}
 
 	cl := createClient()
 
 	var k8simagecrd k8simage.ImageList
+
 	err := cl.List(context.Background(), &k8simagecrd, client.InNamespace(conf.K8SImageNS))
 	if err != nil {
-		log.Fatal("Failed to list K8S-Imege crds inventories in namespace default:", err)
-		os.Exit(17)
+		log.Fatal("Failed to list K8S-Image crds inventories in namespace default: ", err)
+		os.Exit(18)
 	}
 
 	var k8simageTest string
@@ -342,6 +343,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 func getUUIDbyInventory(mac string) string {
 	var conf dataconf
 	conf.getConf()
+
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme:", err)
 		os.Exit(15)
