@@ -253,7 +253,8 @@ func getIPXEbyK8SImage() {
 
 	var k8simageTest string
 	if len(k8simagecrd.Items) > 0 {
-		k8simageTest = k8simagecrd.Items[0].Spec.Kernel
+		log.Printf("It works!")
+		k8simageTest = k8simagecrd.Items[0].Spec.Initrd.Url
 	}
 
 	log.Printf("TEST - %+v", k8simageTest)
