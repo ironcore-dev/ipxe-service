@@ -295,9 +295,10 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
 			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
-			log.Println("Response the default IPXE ConfigMap ...")
+			log.Println("Response the default IPXE config file ...")
 
 			renderIpxeDefaultConfFile(w)
+
 		} else {
 			e := &event{
 				UUID:    uuid,
@@ -312,7 +313,6 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(string(resp))
 			}
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
-
 			// TODO render specified ipxe
 			renderIpxeDefaultConfFile(w)
 		}
@@ -362,7 +362,6 @@ func getUUIDbyInventory(mac string) string {
 
 	mac = strings.ReplaceAll(mac, ":", "")
 	var inventory inv.InventoryList
-	//err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{"machine.onmetal.de/mac-address-" + mac: ""})
 	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{mac: ""})
 	if err != nil {
 		log.Fatal("Failed to list crds inventories in namespace default:", err)
