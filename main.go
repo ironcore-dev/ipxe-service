@@ -207,7 +207,7 @@ func getMac(r *http.Request) string {
 	mac := getMACbyNetdata(ip)
 	log.Printf("Client's MAC Address from Netdata: %s", mac)
 	if mac == "" {
-		log.Printf("Not found client's MAC Address in Netdata for IPv4 (%s): ", ip)
+		log.Printf("Not found client's MAC Address in Netdata for IPv4: %s", ip)
 	}
 	return mac
 }
@@ -263,6 +263,22 @@ func getIPXEbyK8SImage() {
 
 }
 
+func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
+	var c pasrseyaml
+	c.getIpxeConf()
+	tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
+	if err != nil {
+		log.Println("Couldn't parse IPXE template file: ", err)
+	}
+
+	err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
+	if err != nil {
+		log.Println("Couldn't execute IPXE template file: ", err)
+	}
+
+	return nil, err
+}
+
 func getChain(w http.ResponseWriter, r *http.Request) {
 	var mac string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -281,18 +297,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
 			log.Println("Response the default IPXE ConfigMap ...")
 
-			var c pasrseyaml
-			c.getIpxeConf()
-			tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
-			if err != nil {
-				log.Println("Couldn't parse IPXE template file ...", err)
-			}
-
-			err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
-			if err != nil {
-				log.Println("Couldn't execute IPXE template file ...", err)
-			}
-
+			renderIpxeDefaultConfFile(w)
 		} else {
 			e := &event{
 				UUID:    uuid,
@@ -309,18 +314,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
 
 			// TODO render specified ipxe
-			var c pasrseyaml
-			c.getIpxeConf()
-			tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
-			if err != nil {
-				log.Println("Couldn't parse IPXE template file ...", err)
-			}
-
-			err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
-			if err != nil {
-				log.Println("Couldn't execute IPXE template file ...", err)
-			}
-
+			renderIpxeDefaultConfFile(w)
 		}
 	}
 }
@@ -328,7 +322,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 func createClient() client.Client {
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		log.Fatal("Failed to create a client:", err)
+		log.Fatal("Failed to create a client: ", err)
 		os.Exit(19)
 	}
 	return cl
@@ -339,7 +333,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	conf.getConf()
 
 	if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types machine request to client scheme:", err)
+		log.Fatal("Unable to add registered types machine request to client scheme: ", err)
 		os.Exit(12)
 	}
 
@@ -348,11 +342,11 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	var mreqs mreq1.MachineRequestList
 	err := cl.List(context.Background(), &mreqs, client.InNamespace(conf.MachineRequestNS))
 	if err != nil {
-		log.Fatal("Failed to list machine requests in namespace default:", err)
+		log.Fatal("Failed to list machine requests in namespace default: ", err)
 		os.Exit(14)
 	}
 
-	log.Printf("Machine requests %+v", mreqs)
+	log.Printf("Machine requests %+v:", mreqs)
 }
 
 func getUUIDbyInventory(mac string) string {
@@ -360,16 +354,16 @@ func getUUIDbyInventory(mac string) string {
 	conf.getConf()
 
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types inventory to client scheme:", err)
+		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 		os.Exit(15)
 	}
 
 	cl := createClient()
 
 	mac = strings.ReplaceAll(mac, ":", "")
-
 	var inventory inv.InventoryList
-	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{"machine.onmetal.de/mac-address-" + mac: ""})
+	//err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{"machine.onmetal.de/mac-address-" + mac: ""})
+	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{mac: ""})
 	if err != nil {
 		log.Fatal("Failed to list crds inventories in namespace default:", err)
 		os.Exit(17)
