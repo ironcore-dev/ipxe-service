@@ -7,11 +7,12 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.2.0 // indirect
+	github.com/onmetal/k8s-image v0.0.0-20210429165612-c242bbbf4d67
 	github.com/onmetal/k8s-inventory v0.0.0-20210608091530-5af0dfa20b72
 	github.com/onmetal/k8s-machine-requests v0.0.0-20210505193151-fbf6c179a00d
-	github.com/onmetal/machine-operator v0.9.0 // indirect
+	github.com/onmetal/machine-operator v0.9.0
 	github.com/onmetal/netdata v0.0.0-20210628111550-04c33fc83084
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 	k8s.io/client-go v0.21.2
 	k8s.io/klog/v2 v2.9.0 // indirect

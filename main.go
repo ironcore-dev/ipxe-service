@@ -16,7 +16,7 @@ import (
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
-	k8simage "github.com/onmetal/k8s-image/api/v1alpha1"
+	k8simages "github.com/onmetal/k8s-image/api/v1alpha1"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
@@ -243,21 +243,21 @@ func getIPXEbyK8SImage() {
 
 	cl := createClient()
 
-	var k8simagecrd k8simage.ImageList
+	var k8simagecrds k8simages.ImageList
 
-	err := cl.List(context.Background(), &k8simagecrd, client.InNamespace(conf.K8SImageNS))
+	err := cl.List(context.Background(), &k8simagecrds, client.InNamespace(conf.K8SImageNS))
 	if err != nil {
 		log.Fatal("Failed to list K8S-Image crds inventories in namespace default: ", err)
 		os.Exit(18)
 	}
 
-	var k8simageTest string
-	if len(k8simagecrd.Items) > 0 {
-		log.Printf("It works!")
-		k8simageTest = k8simagecrd.Items[0].Spec.Initrd.Url
+	//var k8simageTest string
+	if len(k8simagecrds.Items) > 0 {
+		log.Printf("TEST - %+v", k8simagecrds)
+		//k8simageTest = k8simagecrd.Items[0].Spec.Initrd.Url
 	}
 
-	log.Printf("TEST - %+v", k8simageTest)
+	//log.Printf("TEST - %+v", k8simageTest)
 
 }
 
