@@ -1,0 +1,19 @@
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: selfsigned-crt
+spec:
+  secretName: ipxe-service-tls
+  duration: 170000h
+  renewBefore: 72h
+  issuerRef:
+    kind: Issuer
+    name: selfsigned
+  commonName: {{ .host }}
+  isCA: true
+  dnsNames:
+  - {{ .host }}
+{{- end }}
+{{- end }}
