@@ -6,12 +6,13 @@ require (
 	github.com/coreos/butane v0.12.1
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/uuid v1.2.0 // indirect
+	github.com/onmetal/k8s-image v0.0.0-20210811051445-33b3f7dbb2ce // indirect
 	github.com/onmetal/k8s-inventory v0.0.0-20210608091530-5af0dfa20b72
-	github.com/onmetal/k8s-machine-requests v0.0.0-20210505193151-fbf6c179a00d
-	github.com/onmetal/machine-operator v0.9.0 // indirect
+	github.com/onmetal/k8s-machine-requests v0.0.0-20210811051319-c4211e0dcc20
+	github.com/onmetal/machine-operator v0.9.0
 	github.com/onmetal/netdata v0.0.0-20210628111550-04c33fc83084
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/common v0.30.0 // indirect
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 	k8s.io/client-go v0.21.2
 	k8s.io/klog/v2 v2.9.0 // indirect
