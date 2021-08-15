@@ -16,6 +16,7 @@ import (
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
+	k8simages "github.com/onmetal/k8s-image/api/v1alpha1"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
@@ -87,6 +88,7 @@ type dataconf struct {
 	NetdataNS        string `yaml:"netdata-namespace"`
 	MachineRequestNS string `yaml:"machine-request-namespace"`
 	InventoryNS      string `yaml:"inventory-namespace"`
+	K8SImageNS       string `yaml:"k8simage-namespace"`
 }
 
 func (c *dataconf) getConf() *dataconf {
@@ -163,13 +165,13 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 
 	mac = getMac(r)
 	if mac == "" {
-		log.Printf("Not found mac in netdata, %s", " returned 204")
-		http.Error(w, "not found netdata", http.StatusNoContent)
+		log.Printf("Not found MAC in Netdata, %s", " returned 204")
+		http.Error(w, "Not found netdata", http.StatusNoContent)
 	} else {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
-			log.Printf("Not found inventory uuid for mac %s", mac)
-			log.Printf("Render default ignition from configmap %s", mac)
+			log.Printf("Not found inventory UUID for MAC %s", mac)
+			log.Printf("Render default Ignition from ConfigMap %s", mac)
 			// read ignition-definition:
 			dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
 			if err != nil {
@@ -205,7 +207,7 @@ func getMac(r *http.Request) string {
 	mac := getMACbyNetdata(ip)
 	log.Printf("Client's MAC Address from Netdata: %s", mac)
 	if mac == "" {
-		log.Printf("Not found client's MAC Address in Netdata for IPv4 (%s): ", ip)
+		log.Printf("Not found client's MAC Address in Netdata for IPv4: %s", ip)
 	}
 	return mac
 }
@@ -230,6 +232,53 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 	return c
 }
 
+func getIPXEbyK8SImage() {
+	var conf dataconf
+	conf.getConf()
+
+	if err := k8simages.AddToScheme(scheme.Scheme); err != nil {
+		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
+		os.Exit(15)
+	}
+
+	cl := createClient()
+
+	var k8simagecrds k8simages.ImageList
+
+	err := cl.List(context.Background(), &k8simagecrds, client.InNamespace(conf.K8SImageNS))
+	if err != nil {
+		log.Fatal("Failed to list K8S-Image crds inventories in namespace default: ", err)
+		os.Exit(18)
+	}
+
+	//var k8simageTest string
+	if len(k8simagecrds.Items) > 0 {
+		log.Printf("TEST - %+v", k8simagecrds)
+		//k8simageTest = k8simagecrds.Items[0].Spec.Initrd.Url
+	}
+
+	//log.Printf("TEST - %+v", k8simageTest)
+
+	//return ...
+
+}
+
+func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
+	var c pasrseyaml
+	c.getIpxeConf()
+	tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
+	if err != nil {
+		log.Println("Couldn't parse IPXE template file: ", err)
+	}
+
+	err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
+	if err != nil {
+		log.Println("Couldn't execute IPXE template file: ", err)
+	}
+
+	return nil, err
+}
+
 func getChain(w http.ResponseWriter, r *http.Request) {
 	var mac string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -246,35 +295,26 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
 			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
-			log.Println("Response the default IPXE ConfigMap ...")
+			log.Println("Response the default IPXE config file ...")
 
-			var c pasrseyaml
-			c.getIpxeConf()
-			tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
-			if err != nil {
-				log.Println("Couldn't parse IPXE template file ...", err)
-			}
-
-			err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
-			if err != nil {
-				log.Println("Couldn't execute IPXE template file ...", err)
-			}
+			renderIpxeDefaultConfFile(w)
 
 		} else {
 			e := &event{
 				UUID:    uuid,
 				Reason:  "IPXE",
-				Message: fmt.Sprintf("IPXE request for ip %s and  mac %s ", ip, mac),
+				Message: fmt.Sprintf("IPXE request for IP %s and  MAC %s ", ip, mac),
 			}
 			h := newHttp()
 			requestBody, _ := json.Marshal(e)
 			resp, err := h.postRequest(requestBody)
 			if err != nil {
-				h.log.Info("can't send a request", err)
+				h.log.Info("Can't send a request", err)
 				fmt.Println(string(resp))
 			}
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
 			// TODO render specified ipxe
+			renderIpxeDefaultConfFile(w)
 		}
 	}
 }
@@ -282,7 +322,7 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 func createClient() client.Client {
 	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
 	if err != nil {
-		log.Fatal("Failed to create a client:", err)
+		log.Fatal("Failed to create a client: ", err)
 		os.Exit(19)
 	}
 	return cl
@@ -293,7 +333,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	conf.getConf()
 
 	if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types machine request to client scheme:", err)
+		log.Fatal("Unable to add registered types machine request to client scheme: ", err)
 		os.Exit(12)
 	}
 
@@ -302,27 +342,27 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	var mreqs mreq1.MachineRequestList
 	err := cl.List(context.Background(), &mreqs, client.InNamespace(conf.MachineRequestNS))
 	if err != nil {
-		log.Fatal("Failed to list machine requests in namespace default:", err)
+		log.Fatal("Failed to list machine requests in namespace default: ", err)
 		os.Exit(14)
 	}
 
-	log.Printf("machine requests %+v", mreqs)
+	log.Printf("Machine requests %+v:", mreqs)
 }
 
 func getUUIDbyInventory(mac string) string {
 	var conf dataconf
 	conf.getConf()
+
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types inventory to client scheme:", err)
+		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 		os.Exit(15)
 	}
 
 	cl := createClient()
 
 	mac = strings.ReplaceAll(mac, ":", "")
-
 	var inventory inv.InventoryList
-	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{"machine.onmetal.de/mac-address-" + mac: ""})
+	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{mac: ""})
 	if err != nil {
 		log.Fatal("Failed to list crds inventories in namespace default:", err)
 		os.Exit(17)
@@ -332,7 +372,7 @@ func getUUIDbyInventory(mac string) string {
 	if len(inventory.Items) > 0 {
 		clientUUID = inventory.Items[0].Spec.System.ID
 	}
-	log.Printf("search inventories for mac: %+v", clientUUID)
+	log.Printf("Search inventories for MAC: %+v", clientUUID)
 
 	return clientUUID
 }
@@ -350,7 +390,7 @@ func getMACbyNetdata(ip string) string {
 
 	var crds netdata.NetdataList
 	searchlabel := "ip-" + strings.ReplaceAll(ip, ".", "_")
-	log.Printf("Search label %s", searchlabel)
+	log.Printf("Search label: %s", searchlabel)
 
 	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{searchlabel: ""})
 	if err != nil {
@@ -377,6 +417,5 @@ func getIP(r *http.Request) string {
 
 	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 
-	log.Printf("Ip is %s", clientIP)
 	return clientIP
 }
