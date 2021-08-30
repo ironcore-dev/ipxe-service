@@ -232,7 +232,7 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 	return c
 }
 
-func getIPXEbyK8SImage() {
+func getIPXEbyK8SImage(w http.ResponseWriter) {
 	var conf dataconf
 	conf.getConf()
 
@@ -267,10 +267,7 @@ func getIPXEbyK8SImage() {
         k8simageRootfs = k8simagecrds.Items[0].Spec.Source[2].URL
     }
 
-	fmt.Printf("Kernel: %+v\n", k8simageKernel)
-	fmt.Printf("Initrd: %+v\n", k8simageInitrd)
-	fmt.Printf("Rootfs: %+v\n", k8simageRootfs)
-
+	fmt.Fprintf(w, "#!ipxe\n\nset base-url http://45.86.152.1/ipxe\nkernel %+v\ninitrd %+v\nrootfs %+v\nboot", k8simageKernel, k8simageInitrd, k8simageRootfs)
 
 }
 
@@ -326,9 +323,10 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
 			// TODO render specified ipxe
 			renderIpxeDefaultConfFile(w)
+
 		}
 
-		getIPXEbyK8SImage()
+		getIPXEbyK8SImage(w)
 	}
 }
 
