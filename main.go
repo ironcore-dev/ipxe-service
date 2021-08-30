@@ -264,7 +264,7 @@ func getIPXEbyK8SImage() {
 
     var k8simageRootfs string
     if len(k8simagecrds.Items) > 0 {
-        k8simageKernel = k8simagecrds.Items[0].Spec.Source[2].URL
+        k8simageRootfs = k8simagecrds.Items[0].Spec.Source[2].URL
     }
 
 	fmt.Printf("Kernel: %+v\n", k8simageKernel)
@@ -327,6 +327,8 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			// TODO render specified ipxe
 			renderIpxeDefaultConfFile(w)
 		}
+
+		getIPXEbyK8SImage()
 	}
 }
 
