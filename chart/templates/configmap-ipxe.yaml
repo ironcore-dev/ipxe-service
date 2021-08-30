@@ -1,177 +1,208 @@
-variant: fcos
-version: 1.3.0
-passwd:
-  users:
-    - name: root
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-    - name: aruss
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-      groups: [ "wheel" ]
-      ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCewVAnKBb7/yIWU0qK6X7xNs9+k86KH1zm/jkV+lzKVgsSH9lazUSaWASXLQ5LuwfFRbsu/f2ce4uWaDLhVeKAfA4vN98cITVCpMe0Iwc0WF4GfXEpqVDyDUXtFhv+zIRw1BIYOwaCqE1Ifjy0txnQ0HqKK4mIClCUcebk5NpOvE/7CgFds73pECe/TLetfT0sJWccjkp4ansGXoFi4Oi+oJdqXXBzwACnxsQSGpeIsc+o/9mqhkVps5q45V3jmzPdmUrc77lSDcfyAntRvGzWAGFJQL6wq68l2e0ms4n7UzW4StHNHMt5FinLPUwNfM9kzzz/rW6xZNVBXxaNVnl05frrhyEBeH6jU3CIvlQx4rBCvAAsWKTaZtp1BYUHmSwun3Y3oE9vT+HTvDoeTAZewtKbztX5QH8+aW85JofNX9Z2vpGlAhGp2v2zpfQMsaYkBjdGz49hSVFnAyfEzmDOUgK9wQZZ/g2LJFTZj99JOeGVvdYXrYjYq13VkDE4mgmfz4bQxqMiRSqSGScf0hYn3tpJOAZQTuTwLoJFsv0wAoPAZ9dx3VjnpeeqR0B9ga8IBHaH7ZiHj8lRY7STfTMtP4Y8QRS0CG0eAGzLkLdyMAtv+wajpAGXdGWZPlEd+cHyALDFV3gY7IkgCIPlAWeDcfuPK48MyRZmqhoqFMJp1Q== .ssh/id_rsa" ]
-      shell: /bin/bash
-    - name: hardikdr
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-      groups: [ "wheel" ]
-      ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDRGxY/Gk4BSIibNecYPksey2n73effFHZawq8/cvKK9C7ME/xZddReo8+ELRsdu9wk8EGaQ6JpnWnXA68VqogI+O8Gz/8Vknxuroa0CuNifrYpV019j6NSpqzfgjYQ3amt6sLxFwpz+LRG8fnwXusPiJ1jYenRMiCGzI2dj30YnkLylFjobsBxoMnFFGeaWxCCnTNHF0Aff2yUEfdBJvIbRJP+YofV5uhtf5q35KLHxx7VlhC7Esu/sTXRZbMqyTooHaCMU2d44TsG/zOjpI5xyqXUsDdh8ayxnKBuvDuLyN8jVDPAeKyjuosxKXK747tG0ajw8f1Y8Q9HE02Ga26PiFoj6kU47Zg9qGIi1KpaSKwo1KXiHp0NVbq2XCfWtChXV1yeIYmah7CQtX7vmrC+70SbYjxFdPA5izaROvz+eEhy2kDn3SohV9DPrC1wXWSuIWeJ9fGoC8W9u29TGxDu+47AUcmL24rtYF/vCB2z8vKQGC7ZKoTCGxNL31wETps= i331134@C02V5AK8HTD6" ]
-      shell: /bin/bash
-    - name: tli
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-      groups: [ "wheel" ]
-      ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDsS5ds8cO9odl3EdvwjWvmsgT8Z5W7xxTViU+2Fz5vP4lNwfB8IMBmYXk6WP/90y1iR/ndn3AfcyXXklyPTMoH1ChRLhicvmkCQpz3vv9jZ3Cge5rFJFHXoEHoxQ+LVOGEw49YKjMSUJES5nuMtlwUV3Xsg2nREIQ5G250fBtqUi2ndLBURFbM1kHEuS5jhG/1ZTYsBc/0eyM2oFY23kxqY1wp2o9DtM5xqNRY74ivrCaXktF5BfxYm/hgjAolGHn+FiJR7KuyN56+S2DDb6XoWEN0NKlKddoSC7/MW3MG9JvllqoIvsv7QDArucMPXBaRVbqiKOuAM7T2w4dUdSB1UoKqYo3HvXZDjJ8Y8AGWNe50DF9QjVX4nQ9ROxyp0068OXf682lXuN5VqiK4OHkbEh0NbBn3T0SZFkGNzvU9ROY4lUFJsvn4rI6W415yXhujrFwWxfDkx70oO6+yJaRTBZJXm8TgKyjdC0exoZcoITT1tGPJRUhf7AithBfRbsk= I543130@C02DX3T7MD6T" ]
-      shell: /bin/bash
-    - name: damyan
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-      groups: [ "wheel" ]
-      ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDhedjRzeQ2bjCJLpUU/G8QAvGEmKp3+DnExCb7PCYQwfUgPQY+IusihXO8Gv9DjalP1XJDS8D7VzUBUQZw9tZkrxmBbBTPvCzcQMqd3VXxYpxfx0Ew0LjC4P0ALbjWsEC8IiNxygf52hSh9WwzJzHUsaE8VkOE5xQ9niXUMzUWoM17YkDprem8o1YEr8qEu5Q1Mrhv5H5vbstmoY8P2T5tgTq4FikB34OzcbUiz0rIC42GEnYvdf9CI76vd8WMNUogptnZaUYq9wv1AHyRGffXMjbAv33c5tw4pdHEJouXTJ4N9A1Ijxxirk6Ai0TE+WF/5xIu6fQigEw64qU/+badaByc2Gxmy695twoMZ6rt5iN8saNnPQj0B3Dyrzsir39ovCEtQgDHdx9cGR2QBOgXthv6BgcSkdQ7D0ytDn4axrlZoGSzUJVWy1LeUKSv7n5511u/Q+9LJjcbAY+YDbrWxMQhd7/IvoQcIguvu5c2dqz5sSo5aqAGM+fUDBOETJBHYS9aSCZGAIpwSP8aDC0N8KCO1ziNNuaw6B0w/ZWOeGvtFp7+4Vs/xyBgXYZXqAj2ZPKM27NS2ghvW+3XkIMFT8lC1OavDWTwuz7mJSRfrZZIFDD48k99LTvlVPpxDL70gb8cLomUkREZwjM7lAzKnk5S2jvdzSmZJhX1PDc6+Q== I542373@C02X535TJHD3" ]
-      shell: /bin/bash
-    - name: takt
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-      groups: [ "wheel" ]
-      ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDXVxrf1ofyIlIxAketS/+/1c3IqPBm2P1NUFFxKM63M/KEUmmRxKIQMjLAXnM/9+x+4WPIffP88kX4/GeQXAfHBJ0cxvuhARpH4Zg2v3Iiss8AyY2HApaHZTZ2DvqXt+Qx2RwXHm5r2GnmGH3yn95nv/+SZAJT7dmXagb5jNOYs5H/w/wj342QJxIjodIl5jzqyeGIVT91xEJd4bOfmFg1VNyjPv4LXT93DQ0dLomx3AZEwE6uWYbjrqe/MTSQCZ4ZYSa69cvuRuOOHQx2NRNmiFypyoO2WvE7DrP/O2YjgJNqo1jtNxWmiJ8HfhqXsQThqXcfTEM3RzP2n+rRhecX/uGGSJViV2yiyjaUncKxlEqBg4kVNArNWI5utz020u7lYIlKi0v4yf44Gr6938c21B2XdxV+/MwQTYmB4J2hWJ+1jf/eI1TBPa48b041aRSZiK0Z9NCu5DiUmBc21hf6PZL1xoYrjiEfyjaAwV75rKu3Vm4MaSWH5tzhhm34/WB2o+bYR5ZFBqtb2vnnHgYcxHYYyGgdq9cldxlZXH4YO79Kl547SHtjLnqlXvcU9HDIMutfIUcuircAGHTgpe2DaOHXxip9IpLJyv8Op7w/cAEco9bUFThm/1vdKHRKgNBpEw5HscVOHmKPGO1FbVqjqhA2NV6qkSMxIoa6zS18nw==" ]
-      shell: /bin/bash
-    - name: scatargiu
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-      groups: [ "wheel" ]
-      ssh_authorized_keys: [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFTcq0F1L15ZdUYjBLAB68qIkIYDXEc7PbmrNkY4qJ6X" ]
-      shell: /bin/bash
-    - name: igogrek
-      password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
-      groups: [ "wheel" ]
-      ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDPJRvongf4XX7mitPGO51/3Hi6hM//kUidPkoIvh5zcKo9p6NOce5zEyHpDZvpdNQGpnU8LzlKRR1LiVYKnNz0loPDlOiEd3+P5r69rXCMr8m5HYCPHQakW5oMpE0nnZ+1WqyHHrDAp0ZIvEs78BPakL/sGouK0Ysne3ePiOjj5QK1052X3lmPxh4drJLMWixdIwp7gs+vU6tklx8S+nC/f1Rg7kN4t9D35YTg0ReiJ5MXUImLuC436/ppw8JMP+iQIm2Ay8WNTYWMwnPAlcMbri22z2nA0nLoYFplsP5gw8QAXSJ95xycd/n2JBtmYs858NPinz8K637PQOhhtirD8/Hm1r3LGTAi7ZuNIs6kpESK5E91a9mr1QLGjSDWQRyAR/4Y7VSu5tITnlWFPKK8hpoUQCHlzO0YMndgPQdAg2W9MBAAdtUN8V+rvZFtMJjPefIZ3ZbqO5wRzbPcAymBDGPDTuBwvWKnqN8TkB4SkFpF4hLyW3YVPLT+L6i/0rY+QBXru22Y5Two8/d5L3xmw8vDxOTqHXXcai5SmAhIxQBZOir4pBP/SJCldn7lStGAo6HX3QffKQfOthcA8xjdXXCBEtss1u6FOb/lQPt8S8pyf74tTNjjwEy307NXt0NyIIGBpfKMB8IF+C1OiNr4SSmuiKORKd8hVKtjbpiiRQ==" ]
-      shell: /bin/bash
-storage:
-  disks:
-  - device: /dev/nvme0n1
-    wipe_table: true
-    partitions:
-    - number: 1
-      size_mib: 0
-      start_mib: 0
-  filesystems:
-    - device: /dev/nvme0n1p1
-      format: ext4
-      wipe_filesystem: true
-      label: var
-  files:
-    - path: /etc/systemd/network/91-default.network
-      overwrite: yes
-      mode: 0644
-      contents:
-        inline: |
-          #disabled
-    - path: /etc/systemd/network/lo.network
-      overwrite: yes
-      mode: 0644
-      contents:
-        inline: |
-          [Match]
-          Name=lo
-          [Network]
-          Address=127.0.0.1/8
-          Address=100.64.10.19/32
-          Address=::1/128
-    - path: /etc/systemd/network/en.network
-      overwrite: yes
-      mode: 0644
-      contents:
-        inline: |
-          [Match]
-          Name=en*
-          [Network]
-          DHCP=yes
-          LLDP=true
-          EmitLLDP=true
-          KeepConfiguration=dhcp
-          [DHCPv4]
-          UseDomains=true
-          UseMTU=true
-          UseGateway=false
-    - path: /etc/hostname
-      overwrite: yes
-      mode: 0644
-      contents:
-        inline: |
-          compute-19
-    - path: /etc/hosts
-      append:
-        - inline: |
-            127.0.1.1 compute-19.fra3.infra.onmetal.de compute-18
-    - path: /etc/init.d/movevar.sh
-      overwrite: yes
-      mode: 0755
-      contents:
-        inline: |
-          #!/bin/sh
-          tar c --xattrs -C /run/rootfs/var . | tar xv --xattrs-include='*.*' --skip-old-files -C /var
-    - path: /etc/bird/bird.conf
-      overwrite: yes
-      contents:
-        inline: |
-          log syslog all;
-          graceful restart wait 30;
-          router id 100.64.10.19;
-          protocol kernel {
-            scan time 10;
-            merge paths on;
-            import all;
-            export filter {
-              krt_prefsrc = 100.64.10.19;
-              accept;
-            };
-          }
-          protocol device {
-            scan time 10;
-          }
-          protocol direct {
-            interface "*";
-          }
-          template bgp leaf {
-            local as 4210000019;
-            enable route refresh on;
-            graceful restart time 300;
-            med metric on;
-            import filter {
-                if net = 0.0.0.0/0 then
+apiVersion: v1
+data:
+  config.yaml: |
+    netdata-namespace: onmetal
+    machine-reject-namespace: default
+    inventory-namespace: default
+  ignition-definition.yaml: |
+    variant: fcos
+    version: 1.3.0
+    passwd:
+      users:
+        - name: root
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+        - name: aruss
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+          groups: [ "wheel" ]
+          ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCewVAnKBb7/yIWU0qK6X7xNs9+k86KH1zm/jkV+lzKVgsSH9lazUSaWASXLQ5LuwfFRbsu/f2ce4uWaDLhVeKAfA4vN98cITVCpMe0Iwc0WF4GfXEpqVDyDUXtFhv+zIRw1BIYOwaCqE1Ifjy0txnQ0HqKK4mIClCUcebk5NpOvE/7CgFds73pECe/TLetfT0sJWccjkp4ansGXoFi4Oi+oJdqXXBzwACnxsQSGpeIsc+o/9mqhkVps5q45V3jmzPdmUrc77lSDcfyAntRvGzWAGFJQL6wq68l2e0ms4n7UzW4StHNHMt5FinLPUwNfM9kzzz/rW6xZNVBXxaNVnl05frrhyEBeH6jU3CIvlQx4rBCvAAsWKTaZtp1BYUHmSwun3Y3oE9vT+HTvDoeTAZewtKbztX5QH8+aW85JofNX9Z2vpGlAhGp2v2zpfQMsaYkBjdGz49hSVFnAyfEzmDOUgK9wQZZ/g2LJFTZj99JOeGVvdYXrYjYq13VkDE4mgmfz4bQxqMiRSqSGScf0hYn3tpJOAZQTuTwLoJFsv0wAoPAZ9dx3VjnpeeqR0B9ga8IBHaH7ZiHj8lRY7STfTMtP4Y8QRS0CG0eAGzLkLdyMAtv+wajpAGXdGWZPlEd+cHyALDFV3gY7IkgCIPlAWeDcfuPK48MyRZmqhoqFMJp1Q== .ssh/id_rsa" ]
+          shell: /bin/bash
+        - name: hardikdr
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+          groups: [ "wheel" ]
+          ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDRGxY/Gk4BSIibNecYPksey2n73effFHZawq8/cvKK9C7ME/xZddReo8+ELRsdu9wk8EGaQ6JpnWnXA68VqogI+O8Gz/8Vknxuroa0CuNifrYpV019j6NSpqzfgjYQ3amt6sLxFwpz+LRG8fnwXusPiJ1jYenRMiCGzI2dj30YnkLylFjobsBxoMnFFGeaWxCCnTNHF0Aff2yUEfdBJvIbRJP+YofV5uhtf5q35KLHxx7VlhC7Esu/sTXRZbMqyTooHaCMU2d44TsG/zOjpI5xyqXUsDdh8ayxnKBuvDuLyN8jVDPAeKyjuosxKXK747tG0ajw8f1Y8Q9HE02Ga26PiFoj6kU47Zg9qGIi1KpaSKwo1KXiHp0NVbq2XCfWtChXV1yeIYmah7CQtX7vmrC+70SbYjxFdPA5izaROvz+eEhy2kDn3SohV9DPrC1wXWSuIWeJ9fGoC8W9u29TGxDu+47AUcmL24rtYF/vCB2z8vKQGC7ZKoTCGxNL31wETps= i331134@C02V5AK8HTD6" ]
+          shell: /bin/bash
+        - name: tli
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+          groups: [ "wheel" ]
+          ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDsS5ds8cO9odl3EdvwjWvmsgT8Z5W7xxTViU+2Fz5vP4lNwfB8IMBmYXk6WP/90y1iR/ndn3AfcyXXklyPTMoH1ChRLhicvmkCQpz3vv9jZ3Cge5rFJFHXoEHoxQ+LVOGEw49YKjMSUJES5nuMtlwUV3Xsg2nREIQ5G250fBtqUi2ndLBURFbM1kHEuS5jhG/1ZTYsBc/0eyM2oFY23kxqY1wp2o9DtM5xqNRY74ivrCaXktF5BfxYm/hgjAolGHn+FiJR7KuyN56+S2DDb6XoWEN0NKlKddoSC7/MW3MG9JvllqoIvsv7QDArucMPXBaRVbqiKOuAM7T2w4dUdSB1UoKqYo3HvXZDjJ8Y8AGWNe50DF9QjVX4nQ9ROxyp0068OXf682lXuN5VqiK4OHkbEh0NbBn3T0SZFkGNzvU9ROY4lUFJsvn4rI6W415yXhujrFwWxfDkx70oO6+yJaRTBZJXm8TgKyjdC0exoZcoITT1tGPJRUhf7AithBfRbsk= I543130@C02DX3T7MD6T" ]
+          shell: /bin/bash
+        - name: damyan
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+          groups: [ "wheel" ]
+          ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDhedjRzeQ2bjCJLpUU/G8QAvGEmKp3+DnExCb7PCYQwfUgPQY+IusihXO8Gv9DjalP1XJDS8D7VzUBUQZw9tZkrxmBbBTPvCzcQMqd3VXxYpxfx0Ew0LjC4P0ALbjWsEC8IiNxygf52hSh9WwzJzHUsaE8VkOE5xQ9niXUMzUWoM17YkDprem8o1YEr8qEu5Q1Mrhv5H5vbstmoY8P2T5tgTq4FikB34OzcbUiz0rIC42GEnYvdf9CI76vd8WMNUogptnZaUYq9wv1AHyRGffXMjbAv33c5tw4pdHEJouXTJ4N9A1Ijxxirk6Ai0TE+WF/5xIu6fQigEw64qU/+badaByc2Gxmy695twoMZ6rt5iN8saNnPQj0B3Dyrzsir39ovCEtQgDHdx9cGR2QBOgXthv6BgcSkdQ7D0ytDn4axrlZoGSzUJVWy1LeUKSv7n5511u/Q+9LJjcbAY+YDbrWxMQhd7/IvoQcIguvu5c2dqz5sSo5aqAGM+fUDBOETJBHYS9aSCZGAIpwSP8aDC0N8KCO1ziNNuaw6B0w/ZWOeGvtFp7+4Vs/xyBgXYZXqAj2ZPKM27NS2ghvW+3XkIMFT8lC1OavDWTwuz7mJSRfrZZIFDD48k99LTvlVPpxDL70gb8cLomUkREZwjM7lAzKnk5S2jvdzSmZJhX1PDc6+Q== I542373@C02X535TJHD3" ]
+          shell: /bin/bash
+        - name: takt
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+          groups: [ "wheel" ]
+          ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDXVxrf1ofyIlIxAketS/+/1c3IqPBm2P1NUFFxKM63M/KEUmmRxKIQMjLAXnM/9+x+4WPIffP88kX4/GeQXAfHBJ0cxvuhARpH4Zg2v3Iiss8AyY2HApaHZTZ2DvqXt+Qx2RwXHm5r2GnmGH3yn95nv/+SZAJT7dmXagb5jNOYs5H/w/wj342QJxIjodIl5jzqyeGIVT91xEJd4bOfmFg1VNyjPv4LXT93DQ0dLomx3AZEwE6uWYbjrqe/MTSQCZ4ZYSa69cvuRuOOHQx2NRNmiFypyoO2WvE7DrP/O2YjgJNqo1jtNxWmiJ8HfhqXsQThqXcfTEM3RzP2n+rRhecX/uGGSJViV2yiyjaUncKxlEqBg4kVNArNWI5utz020u7lYIlKi0v4yf44Gr6938c21B2XdxV+/MwQTYmB4J2hWJ+1jf/eI1TBPa48b041aRSZiK0Z9NCu5DiUmBc21hf6PZL1xoYrjiEfyjaAwV75rKu3Vm4MaSWH5tzhhm34/WB2o+bYR5ZFBqtb2vnnHgYcxHYYyGgdq9cldxlZXH4YO79Kl547SHtjLnqlXvcU9HDIMutfIUcuircAGHTgpe2DaOHXxip9IpLJyv8Op7w/cAEco9bUFThm/1vdKHRKgNBpEw5HscVOHmKPGO1FbVqjqhA2NV6qkSMxIoa6zS18nw==" ]
+          shell: /bin/bash
+        - name: scatargiu
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+          groups: [ "wheel" ]
+          ssh_authorized_keys: [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFTcq0F1L15ZdUYjBLAB68qIkIYDXEc7PbmrNkY4qJ6X" ]
+          shell: /bin/bash
+        - name: igogrek
+          password_hash: "$6$nq7WpLYJhmsUn7Pa$SDFlU/34qMoEnscBK03Fqc26/RaV01QYB2dMvIgoRTFmNNYQVg7YYzTOG4phKAgMw5UwRU4ePwKndYea9X/iO0"
+          groups: [ "wheel" ]
+          ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDPJRvongf4XX7mitPGO51/3Hi6hM//kUidPkoIvh5zcKo9p6NOce5zEyHpDZvpdNQGpnU8LzlKRR1LiVYKnNz0loPDlOiEd3+P5r69rXCMr8m5HYCPHQakW5oMpE0nnZ+1WqyHHrDAp0ZIvEs78BPakL/sGouK0Ysne3ePiOjj5QK1052X3lmPxh4drJLMWixdIwp7gs+vU6tklx8S+nC/f1Rg7kN4t9D35YTg0ReiJ5MXUImLuC436/ppw8JMP+iQIm2Ay8WNTYWMwnPAlcMbri22z2nA0nLoYFplsP5gw8QAXSJ95xycd/n2JBtmYs858NPinz8K637PQOhhtirD8/Hm1r3LGTAi7ZuNIs6kpESK5E91a9mr1QLGjSDWQRyAR/4Y7VSu5tITnlWFPKK8hpoUQCHlzO0YMndgPQdAg2W9MBAAdtUN8V+rvZFtMJjPefIZ3ZbqO5wRzbPcAymBDGPDTuBwvWKnqN8TkB4SkFpF4hLyW3YVPLT+L6i/0rY+QBXru22Y5Two8/d5L3xmw8vDxOTqHXXcai5SmAhIxQBZOir4pBP/SJCldn7lStGAo6HX3QffKQfOthcA8xjdXXCBEtss1u6FOb/lQPt8S8pyf74tTNjjwEy307NXt0NyIIGBpfKMB8IF+C1OiNr4SSmuiKORKd8hVKtjbpiiRQ==" ]
+          shell: /bin/bash
+    storage:
+      disks:
+      - device: /dev/nvme0n1
+        wipe_table: true
+        partitions:
+        - number: 1
+          size_mib: 0
+          start_mib: 0
+      filesystems:
+        - device: /dev/nvme0n1p1
+          format: ext4
+          wipe_filesystem: true
+          label: var
+      files:
+        - path: /etc/systemd/network/91-default.network
+          overwrite: yes
+          mode: 0644
+          contents:
+            inline: |
+              #disabled
+        - path: /etc/systemd/network/lo.network
+          overwrite: yes
+          mode: 0644
+          contents:
+            inline: |
+              [Match]
+              Name=lo
+              [Network]
+              Address=127.0.0.1/8
+              Address=100.64.10.19/32
+              Address=::1/128
+        - path: /etc/systemd/network/en.network
+          overwrite: yes
+          mode: 0644
+          contents:
+            inline: |
+              [Match]
+              Name=en*
+              [Network]
+              DHCP=yes
+              LLDP=true
+              EmitLLDP=true
+              KeepConfiguration=dhcp
+              [DHCPv4]
+              UseDomains=true
+              UseMTU=true
+              UseGateway=false
+        - path: /etc/hostname
+          overwrite: yes
+          mode: 0644
+          contents:
+            inline: |
+              compute-19
+        - path: /etc/hosts
+          append:
+            - inline: |
+                127.0.1.1 compute-19.fra3.infra.onmetal.de compute-18
+        - path: /etc/init.d/movevar.sh
+          overwrite: yes
+          mode: 0755
+          contents:
+            inline: |
+              #!/bin/sh
+              tar c --xattrs -C /run/rootfs/var . | tar xv --xattrs-include='*.*' --skip-old-files -C /var
+        - path: /etc/bird/bird.conf
+          overwrite: yes
+          contents:
+            inline: |
+              log syslog all;
+              graceful restart wait 30;
+              router id 100.64.10.19;
+              protocol kernel {
+                scan time 10;
+                merge paths on;
+                import all;
+                export filter {
+                  krt_prefsrc = 100.64.10.19;
                   accept;
-                reject;
-            };
-            export filter {
-                if source != RTS_DEVICE then
-                        reject;
-                if net ~ [
-                        100.64.10.19/32
-                        ] then
-                        accept;
-                reject;
-            };
-          }
-          protocol bgp leaf_1 from leaf {
-            neighbor 100.64.2.73 as 4220000001;
-          }
-          protocol bgp leaf_2 from leaf {
-            neighbor 100.64.4.73 as 4220000002;
-          }
-systemd:
-  units:
-    - name: var.mount
-      enabled: true
-      contents: |
-        [Unit]
-        Before=local-fs.target
-        [Mount]
-        What=/dev/nvme0n1p1
-        Where=/var
-        [Install]
-        WantedBy=local-fs.target
-    - name: movevar.service
-      enabled: true
-      contents: |
-        [Unit]
-        ConditionFirstBoot=yes
-        After=local-fs.target
-        Before=network.target
-        [Service]
-        Type=oneshot
-        ExecStart=/etc/init.d/movevar.sh
-        [Install]
-        WantedBy=multi-user.target
+                };
+              }
+              protocol device {
+                scan time 10;
+              }
+              protocol direct {
+                interface "*";
+              }
+              template bgp leaf {
+                local as 4210000019;
+                enable route refresh on;
+                graceful restart time 300;
+                med metric on;
+                import filter {
+                    if net = 0.0.0.0/0 then
+                      accept;
+                    reject;
+                };
+                export filter {
+                    if source != RTS_DEVICE then
+                            reject;
+                    if net ~ [
+                            100.64.10.19/32
+                            ] then
+                            accept;
+                    reject;
+                };
+              }
+              protocol bgp leaf_1 from leaf {
+                neighbor 100.64.2.73 as 4220000001;
+              }
+              protocol bgp leaf_2 from leaf {
+                neighbor 100.64.4.73 as 4220000002;
+              }
+    systemd:
+      units:
+        - name: var.mount
+          enabled: true
+          contents: |
+            [Unit]
+            Before=local-fs.target
+            [Mount]
+            What=/dev/nvme0n1p1
+            Where=/var
+            [Install]
+            WantedBy=local-fs.target
+        - name: movevar.service
+          enabled: true
+          contents: |
+            [Unit]
+            ConditionFirstBoot=yes
+            After=local-fs.target
+            Before=network.target
+            [Service]
+            Type=oneshot
+            ExecStart=/etc/init.d/movevar.sh
+            [Install]
+            WantedBy=multi-user.target
+  ipxe-default.yaml: |
+    base-url: http://45.86.152.1/ipxe
+    kernel: ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs gl.url=${base-url}/root.squashfs gl.live=1 ip=dhcp console=ttyS1,115200n8 console=tty0 earlyprintk=ttyS1,115200n8 consoleblank=0 ignition.firstboot=1 ignition.config.url=${base-url}/ip${net0/ip}/ignition.json ignition.platform.id=metal
+    initrd: ${base-url}/rootfs.initrd
+  ipxe-template: |
+    #!ipxe
+
+    set base-url {{ .BaseUrl }}
+    kernel {{ .Kernel }}
+    initrd {{ .Initrd }}
+
+    boot
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: ipxe-service
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2021-07-13T11:26:49Z"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: ipxe-service-config
+  namespace: default
+  resourceVersion: "28285792"
+  uid: 871255dd-a035-4365-b456-ea1a1e1e15e2
