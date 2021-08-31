@@ -232,7 +232,7 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 	return c
 }
 
-func getIPXEbyK8SImage() {
+func getIPXEbyK8SImage(w http.ResponseWriter) {
 	var conf dataconf
 	conf.getConf()
 
@@ -251,15 +251,23 @@ func getIPXEbyK8SImage() {
 		os.Exit(18)
 	}
 
-	//var k8simageTest string
+	var k8simageKernel string
 	if len(k8simagecrds.Items) > 0 {
-		log.Printf("TEST - %+v", k8simagecrds)
-		//k8simageTest = k8simagecrds.Items[0].Spec.Initrd.Url
+		log.Printf("All Items for K8S-Image CRD - %+v", k8simagecrds)
+		k8simageKernel = k8simagecrds.Items[0].Spec.Source[0].URL
 	}
 
-	//log.Printf("TEST - %+v", k8simageTest)
+    var k8simageInitrd string
+    if len(k8simagecrds.Items) > 0 {
+        k8simageInitrd = k8simagecrds.Items[0].Spec.Source[1].URL
+    }
 
-	//return ...
+    var k8simageRootfs string
+    if len(k8simagecrds.Items) > 0 {
+        k8simageRootfs = k8simagecrds.Items[0].Spec.Source[2].URL
+    }
+
+	fmt.Fprintf(w, "#!ipxe\n\nset base-url http://45.86.152.1/ipxe\nkernel %+v\ninitrd %+v\nrootfs %+v\nboot", k8simageKernel, k8simageInitrd, k8simageRootfs)
 
 }
 
@@ -315,7 +323,10 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
 			// TODO render specified ipxe
 			renderIpxeDefaultConfFile(w)
+
 		}
+
+		getIPXEbyK8SImage(w)
 	}
 }
 
@@ -339,7 +350,7 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 
 	cl := createClient()
 
-	var mreqs mreq1.MachineRequestList
+	var mreqs mreq1.MachineList
 	err := cl.List(context.Background(), &mreqs, client.InNamespace(conf.MachineRequestNS))
 	if err != nil {
 		log.Fatal("Failed to list machine requests in namespace default: ", err)
