@@ -509,6 +509,8 @@ github.com/onmetal/k8s-image v0.0.0-20210811051445-33b3f7dbb2ce/go.mod h1:9JS4ZJ
 github.com/onmetal/k8s-image v0.0.0-20210815171444-b3c3fabdadcd/go.mod h1:hRphUHnm+s+2/0Kl6oH9mU6YjRHmG+eII4BQqqPMOOQ=
 github.com/onmetal/k8s-image v0.0.0-20210825134557-3797ee3b3d8d h1:4fuq2vfzAVzrRZw/OkiuSGtv876UmJqwOZ/7UqIPym0=
 github.com/onmetal/k8s-image v0.0.0-20210825134557-3797ee3b3d8d/go.mod h1:kWX50nOKds5SST2h0ASRNmHdRoXnySIc9HJ6I2U9Aew=
+github.com/onmetal/k8s-image v0.0.0-20210829194124-989dac3e4e7f h1:x5KsOpg6Zmnumzl6ay+4+aXw5VqKavVHs4LEEUnUfWs=
+github.com/onmetal/k8s-image v0.0.0-20210829194124-989dac3e4e7f/go.mod h1:Xp/KorU1KXk4iMFHSKpTIFyhHYB0gWjubKP1zZL7uo8=
 github.com/onmetal/k8s-inventory v0.0.0-20210226103223-f5b3c3dfc868/go.mod h1:v61fLKQcraI8tE4o0vHXgBIUY1GNON11nmfd+ws80pk=
 github.com/onmetal/k8s-inventory v0.0.0-20210421045428-4acba6361891/go.mod h1:kAqOlvPeZHSYsJudk0/Hdih5vgjgdg0B+7xEUupvSzo=
 github.com/onmetal/k8s-inventory v0.0.0-20210426111946-abb44afe17c5/go.mod h1:IssnyW/sb+AvPd6Rb8NZvCf6lcVsEQNSIZJQyOJQYuM=
@@ -523,6 +525,8 @@ github.com/onmetal/k8s-machine-requests v0.0.0-20210811051319-c4211e0dcc20/go.mo
 github.com/onmetal/k8s-machine-requests v0.0.0-20210817185901-f33ea3a527c2/go.mod h1:Yr2bo6M5oSEB+Fymo4Vt3Dly9YQUA1+PdySAbri59ZM=
 github.com/onmetal/k8s-machine-requests v0.0.0-20210829193637-71ab9009d348 h1:b/NS9apOfLxDFe9Wr6nlvy8y+8UaLxdEKZd03sJ3Tlw=
 github.com/onmetal/k8s-machine-requests v0.0.0-20210829193637-71ab9009d348/go.mod h1:RQAhSYAZTyPygFzuOtu52Ri2iZwyMss0fcjEEwhn4Aw=
+github.com/onmetal/k8s-machine-requests v0.0.0-20210901134901-3a2a3b92842c h1:g1Jg3Qrx5/pfY9ShSxeNZjFfeMA27FXETn3cKotHpII=
+github.com/onmetal/k8s-machine-requests v0.0.0-20210901134901-3a2a3b92842c/go.mod h1:FXE9MUBZROW4MQo5borDarMj+H/64oFlSnQ6hrywlfA=
 github.com/onmetal/k8s-network-global v0.0.0-20210528142724-3da4d0e4351e/go.mod h1:7t5AUuEq0JqsIB392eWMfRNhW+xPYcnFilVD7MXatjw=
 github.com/onmetal/k8s-network-global v0.0.0-20210531125123-2c3bd6e57b07 h1:sYddplAGrgWU0bwDAyz2/cuPpBDeHBS1rIEKNrRhhGw=
 github.com/onmetal/k8s-network-global v0.0.0-20210531125123-2c3bd6e57b07/go.mod h1:7t5AUuEq0JqsIB392eWMfRNhW+xPYcnFilVD7MXatjw=
