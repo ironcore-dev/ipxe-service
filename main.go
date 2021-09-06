@@ -18,11 +18,13 @@ import (
 	"github.com/coreos/butane/config/common"
 	k8simages "github.com/onmetal/k8s-image/api/v1alpha1"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
+	minst "github.com/onmetal/k8s-machine-instance/api/v1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
 	netdata "github.com/onmetal/netdata/api/v1"
 	"gopkg.in/yaml.v1"
 
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -85,10 +87,11 @@ func ok200(w http.ResponseWriter, r *http.Request) {
 }
 
 type dataconf struct {
+	InstanceNS       string `yaml:"instance-namespace"`
 	NetdataNS        string `yaml:"netdata-namespace"`
 	MachineRequestNS string `yaml:"machine-request-namespace"`
 	InventoryNS      string `yaml:"inventory-namespace"`
-	K8SImageNS       string `yaml:"k8simage-namespace"`
+	ImageNS          string `yaml:"k8simage-namespace"`
 }
 
 func (c *dataconf) getConf() *dataconf {
@@ -153,6 +156,23 @@ func getToken() (string, error) {
 	return string(data), nil
 }
 
+func renderDefaultIgnition(mac string, w http.ResponseWriter) {
+	log.Printf("Render default Ignition from ConfigMap %s", mac)
+	// read ignition-definition:
+	dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
+	if err != nil {
+		log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition.yaml Error: %+v", err)
+	}
+	// render by butane to json
+	options := common.TranslateBytesOptions{}
+	dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
+	if err != nil {
+		log.Printf("Error in ignition rendering: %+v", err)
+	}
+	// return json
+	fmt.Fprintf(w, string(dataOut))
+}
+
 func getIgnition(w http.ResponseWriter, r *http.Request) {
 	var mac string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -171,17 +191,7 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
 			log.Printf("Not found inventory UUID for MAC %s", mac)
-			log.Printf("Render default Ignition from ConfigMap %s", mac)
-			// read ignition-definition:
-			dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
-			if err != nil {
-				log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition.yaml Error: %+v", err)
-			}
-			// render by butane to json
-			options := common.TranslateBytesOptions{}
-			dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
-			// return json
-			fmt.Fprintf(w, string(dataOut))
+			renderDefaultIgnition(mac, w)
 		} else {
 			ip := getIP(r)
 			e := &event{
@@ -196,7 +206,32 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 				h.log.Info("can't send a request", err)
 				fmt.Println(string(resp))
 			}
-			// TODO render specified ignition
+
+			var (
+				instances minst.MachineInstanceList
+				mreqs     mreq1.MachineList
+			)
+			instances = getMachineInstance(uuid)
+			if len(instances.Items) == 0 {
+				log.Printf("Not found instance with UUID  %s", uuid)
+				renderDefaultIgnition(mac, w)
+				return
+			}
+			// TODO handle multiple instances
+			machineReqID := instances.Items[0].Spec.MachineRequestID
+			mreqs = getMachineRequest(machineReqID)
+			if len(mreqs.Items) == 0 {
+				log.Printf("Not found machinerequest with ID  %s", machineReqID)
+				renderDefaultIgnition(mac, w)
+				return
+			}
+			userData := mreqs.Items[0].Spec.UserData
+			log.Printf("UserData: %+v", userData)
+			// render by butane to json
+			options := common.TranslateBytesOptions{}
+			dataOut, _, err := buconfig.TranslateBytes([]byte(userData), options)
+			// return json
+			fmt.Fprintf(w, string(dataOut))
 		}
 	}
 }
@@ -232,7 +267,7 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 	return c
 }
 
-func getIPXEbyK8SImage(w http.ResponseWriter) {
+func getIPXEbyK8SImage(w http.ResponseWriter, imageName string) {
 	var conf dataconf
 	conf.getConf()
 
@@ -242,33 +277,23 @@ func getIPXEbyK8SImage(w http.ResponseWriter) {
 	}
 
 	cl := createClient()
+	k8simagecrd := k8simages.Image{}
 
-	var k8simagecrds k8simages.ImageList
+	imgNamespacedName := types.NamespacedName{
+		Namespace: conf.ImageNS,
+		Name:      imageName,
+	}
 
-	err := cl.List(context.Background(), &k8simagecrds, client.InNamespace(conf.K8SImageNS))
+	err := cl.Get(context.Background(), imgNamespacedName, &k8simagecrd)
 	if err != nil {
-		log.Fatal("Failed to list K8S-Image crds inventories in namespace default: ", err)
+		log.Printf("Failed to get K8S-Image crd in namespace %s: %+v", conf.ImageNS, err)
 		os.Exit(18)
 	}
 
-	var k8simageKernel string
-	if len(k8simagecrds.Items) > 0 {
-		log.Printf("All Items for K8S-Image CRD - %+v", k8simagecrds)
-		k8simageKernel = k8simagecrds.Items[0].Spec.Source[0].URL
-	}
-
-    var k8simageInitrd string
-    if len(k8simagecrds.Items) > 0 {
-        k8simageInitrd = k8simagecrds.Items[0].Spec.Source[1].URL
-    }
-
-    var k8simageRootfs string
-    if len(k8simagecrds.Items) > 0 {
-        k8simageRootfs = k8simagecrds.Items[0].Spec.Source[2].URL
-    }
-
+	k8simageKernel := k8simagecrd.Spec.Source[0].URL
+	k8simageInitrd := k8simagecrd.Spec.Source[1].URL
+	k8simageRootfs := k8simagecrd.Spec.Source[2].URL
 	fmt.Fprintf(w, "#!ipxe\n\nset base-url http://45.86.152.1/ipxe\nkernel %+v\ninitrd %+v\nrootfs %+v\nboot", k8simageKernel, k8simageInitrd, k8simageRootfs)
-
 }
 
 func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
@@ -318,15 +343,30 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 			resp, err := h.postRequest(requestBody)
 			if err != nil {
 				h.log.Info("Can't send a request", err)
-				fmt.Println(string(resp))
+				log.Println(string(resp))
 			}
-			fmt.Fprintf(w, "Generate IPXE config for the client ...\n")
-			// TODO render specified ipxe
-			renderIpxeDefaultConfFile(w)
-
+			log.Printf("Generate IPXE config for the client ...\n")
+			var (
+				instances minst.MachineInstanceList
+				mreqs     mreq1.MachineList
+			)
+			instances = getMachineInstance(uuid)
+			if len(instances.Items) == 0 {
+				log.Printf("Not found instance with UUID  %s", uuid)
+				renderIpxeDefaultConfFile(w)
+				return
+			}
+			// TODO handle multiple instances
+			machineReqID := instances.Items[0].Spec.MachineRequestID
+			mreqs = getMachineRequest(machineReqID)
+			if len(mreqs.Items) == 0 {
+				log.Printf("Not found machinerequest with ID  %s", machineReqID)
+				renderIpxeDefaultConfFile(w)
+				return
+			}
+			imageName := mreqs.Items[0].Spec.Image.Name
+			getIPXEbyK8SImage(w, imageName)
 		}
-
-		getIPXEbyK8SImage(w)
 	}
 }
 
@@ -339,7 +379,7 @@ func createClient() client.Client {
 	return cl
 }
 
-func getMachineRequest(w http.ResponseWriter, r *http.Request) {
+func getMachineRequest(uuid string) mreq1.MachineList {
 	var conf dataconf
 	conf.getConf()
 
@@ -349,15 +389,36 @@ func getMachineRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cl := createClient()
-
 	var mreqs mreq1.MachineList
-	err := cl.List(context.Background(), &mreqs, client.InNamespace(conf.MachineRequestNS))
+	err := cl.List(context.Background(), &mreqs, client.InNamespace(conf.MachineRequestNS), client.MatchingLabels{"id": uuid})
 	if err != nil {
 		log.Fatal("Failed to list machine requests in namespace default: ", err)
 		os.Exit(14)
 	}
 
 	log.Printf("Machine requests %+v:", mreqs)
+	return mreqs
+}
+
+func getMachineInstance(uuid string) minst.MachineInstanceList {
+	var conf dataconf
+	conf.getConf()
+
+	if err := minst.AddToScheme(scheme.Scheme); err != nil {
+		log.Fatal("Unable to add registered types machine-instance to client scheme: ", err)
+		os.Exit(22)
+	}
+
+	cl := createClient()
+	var minstes minst.MachineInstanceList
+	err := cl.List(context.Background(), &minstes, client.InNamespace(conf.InstanceNS), client.MatchingLabels{"id": uuid})
+	if err != nil {
+		log.Printf("Failed to list machine-instance in namespace %s: %+v", conf.InstanceNS, err)
+		os.Exit(24)
+	}
+
+	log.Printf("Machine-instances %+v:", minstes)
+	return minstes
 }
 
 func getUUIDbyInventory(mac string) string {

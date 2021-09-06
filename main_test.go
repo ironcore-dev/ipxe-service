@@ -72,7 +72,7 @@ func TestIgnition204Handler(t *testing.T) {
 			status, http.StatusNoContent)
 	}
 
-	expected := `not found netdata
+	expected := `Not found netdata
 `
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
