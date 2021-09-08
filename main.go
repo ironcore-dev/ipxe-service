@@ -16,13 +16,14 @@ import (
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
+	"gopkg.in/yaml.v1"
+
 	k8simages "github.com/onmetal/k8s-image/api/v1alpha1"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
 	minst "github.com/onmetal/k8s-machine-instance/api/v1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
 	netdata "github.com/onmetal/netdata/api/v1"
-	"gopkg.in/yaml.v1"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -461,10 +462,10 @@ func getMACbyNetdata(ip string) string {
 	cl := createClient()
 
 	var crds netdata.NetdataList
-	searchlabel := "ip-" + strings.ReplaceAll(ip, ".", "_")
-	log.Printf("Search label: %s", searchlabel)
+	searchLabel := netdata.LabelForIP(ip)
+	log.Printf("Search label: %s", searchLabel)
 
-	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{searchlabel: ""})
+	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{searchLabel: ""})
 	if err != nil {
 		log.Fatal("Failed to list crds netdata in namespace default:", err)
 		os.Exit(20)
