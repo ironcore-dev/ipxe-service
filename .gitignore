@@ -1,2 +1,7 @@
-bin
+bin/
+vendor/
 
+### IDE's ###
+.vscode/*
+.idea/
+*.iml
