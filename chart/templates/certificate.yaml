@@ -1,5 +1,13 @@
 {{- if .Values.ingress.enabled }}
 {{- range .Values.ingress.hosts }}
+{{- $host := "" -}}
+{{- if eq $.Values.location "fra3" }}
+{{- $host = tpl ( .host.fra3 ) $ -}}
+{{- else if eq $.Values.location "fra4" }}
+{{- $host = tpl ( .host.fra4 ) $ -}}
+{{- else }}
+{{- fail "Please specify valid location (fra3, fra4, etc.) in .Values.yaml" }}
+{{- end }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -11,9 +19,9 @@ spec:
   issuerRef:
     kind: Issuer
     name: selfsigned
-  commonName: {{ .host }}
+  commonName: {{ $host }}
   isCA: true
   dnsNames:
-  - {{ .host }}
+  - {{ $host }}
 {{- end }}
 {{- end }}
