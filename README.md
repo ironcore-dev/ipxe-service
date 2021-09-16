@@ -2,8 +2,10 @@
 
 ## Install iPXE into Kubernetes cluster
 
+If you want to specify a location different that fra3,
+please provide it as a value. Currently only fra3 and fra4 are supported
 ```bash
-helm install ipxe-service ./chart
+helm install ipxe-service ./chart [--set location=fra4]
 ```
 ## Run iPXE locally
 
