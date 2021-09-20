@@ -198,13 +198,5 @@ data:
     boot
 kind: ConfigMap
 metadata:
-  annotations:
-    meta.helm.sh/release-name: ipxe-service
-    meta.helm.sh/release-namespace: default
-  creationTimestamp: "2021-07-13T11:26:49Z"
-  labels:
-    app.kubernetes.io/managed-by: Helm
   name: ipxe-service-config
   namespace: default
-  resourceVersion: "28285792"
-  uid: 871255dd-a035-4365-b456-ea1a1e1e15e2
