@@ -199,4 +199,3 @@ data:
 kind: ConfigMap
 metadata:
   name: ipxe-service-config
-  namespace: default
