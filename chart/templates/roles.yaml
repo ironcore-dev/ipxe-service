@@ -26,4 +26,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: ipxe-service
+  namespace: {{ .Release.Namespace }}
 
