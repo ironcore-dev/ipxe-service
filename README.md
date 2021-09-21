@@ -13,6 +13,7 @@ To build and run iPXE locally:
 ```bash
 make all
 make run
+curl http://127.0.0.1:8082
 ```
 
 ## HTTP Requests

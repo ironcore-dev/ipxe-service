@@ -158,23 +158,29 @@ func getToken() (string, error) {
 }
 
 func renderDefaultIgnition(mac string, w http.ResponseWriter) {
-	log.Printf("Render default Ignition from ConfigMap %s", mac)
+	log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
 	// read ignition-definition:
 	dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
 	if err != nil {
 		log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition.yaml Error: %+v", err)
 	}
 	// render by butane to json
-	options := common.TranslateBytesOptions{}
+	options := common.TranslateBytesOptions{
+		Raw:    true,
+		Strict: false,
+		Pretty: true,
+	}
+	options.NoResourceAutoCompression = true
 	dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
 	if err != nil {
 		log.Printf("Error in ignition rendering: %+v", err)
 	}
 	// return json
-	fmt.Fprintf(w, string(dataOut))
+	fmt.Fprint(w, string(dataOut))
 }
 
 func getIgnition(w http.ResponseWriter, r *http.Request) {
+	log.Print("TODO make autorestart if configmap was changed")
 	var mac string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
 		requestIGNITIONDuration.WithLabelValues(mac).Observe(v)
