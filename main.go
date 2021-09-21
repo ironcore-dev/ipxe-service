@@ -76,10 +76,23 @@ func main() {
 	http.HandleFunc("/", ok200)
 	http.HandleFunc("/ipxe", getChain)
 	http.HandleFunc("/ignition", getIgnition)
+	http.HandleFunc("/-/reload", reloadApp)
 	http.Handle("/metrics", promhttp.Handler())
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
+	}
+}
+
+func reloadApp(w http.ResponseWriter, r *http.Request) {
+	ip := getIP(r)
+	if ip == "127.0.0.1" {
+		log.Print("Reload server because changed configmap")
+		w.Write([]byte("reloaded"))
+		go os.Exit(0)
+	} else {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("forbidden"))
 	}
 }
 
@@ -168,7 +181,7 @@ func renderDefaultIgnition(mac string, w http.ResponseWriter) {
 	options := common.TranslateBytesOptions{
 		Raw:    true,
 		Strict: false,
-		Pretty: true,
+		Pretty: false,
 	}
 	options.NoResourceAutoCompression = true
 	dataOut, _, err := buconfig.TranslateBytes(dataIn, options)

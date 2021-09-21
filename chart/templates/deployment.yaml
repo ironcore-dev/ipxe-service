@@ -35,6 +35,18 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
+        - name: configmap-reload
+          image: "jimmidyson/configmap-reload:v0.5.0"
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - --volume-dir=/etc/ipxe-service
+            - --webhook-url=http://127.0.0.1:8082/-/reload
+          resources:
+            {}
+          volumeMounts:
+          - name: ipxe-service-config
+            mountPath: /etc/ipxe-service
+            readOnly: true
         - name: {{ .Chart.Name }}
           volumeMounts:
           - name: ipxe-service-config
