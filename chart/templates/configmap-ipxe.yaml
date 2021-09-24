@@ -191,9 +191,9 @@ data:
   ipxe-template: |
     #!ipxe
 
-    set base-url {{ .BaseUrl }}
-    kernel {{ .Kernel }}
-    initrd {{ .Initrd }}
+    set base-url {{ "{{" }}  .BaseUrl }}
+    kernel {{ "{{" }} .Kernel }}
+    initrd {{ "{{" }} .Initrd }}
 
     boot
 kind: ConfigMap

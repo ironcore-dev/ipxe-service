@@ -74,13 +74,13 @@ ingress:
         fra4: "{{ .Values.hosts.fra4 }}"
       paths:
         - path: /
-  tls:
-    - secretName: ipxe-service-tls
-      hosts:
-      - host:
-          fra3: "{{ .Values.hosts.fra3 }}"
-          fra4: "{{ .Values.hosts.fra4 }}"
-
+  tls: []
+    #    - secretName: ipxe-service-tls
+    #      hosts:
+    #      - host:
+    #          fra3: "{{ .Values.hosts.fra3 }}"
+    #          fra4: "{{ .Values.hosts.fra4 }}"
+    #
 hosts:
     fra3: ipxe-service.local.ns1.fra3.infra.onmetal.de
     fra4: ipxe-service.local.ns1.fra4.infra.onmetal.de
