@@ -17,7 +17,7 @@ jobs:
 
       - name: Lint Helm
         run: |
-          helm lint ./chart --strict
+          helm lint deploy/charts/ipxe-service --strict
   release:
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
@@ -38,8 +38,8 @@ jobs:
       - name: Run chart-releaser
         uses: goodsmileduck/helm-push-action@v3.3.1
         env:
-          SOURCE_DIR: '.'
-          CHART_FOLDER: 'chart'
+          SOURCE_DIR: 'deploy/charts'
+          CHART_FOLDER: 'ipxe-service'
           FORCE: 'True'
           CHARTMUSEUM_URL: ' https://core.harbor.onmetal.de/chartrepo/onmetal'
           CHARTMUSEUM_USER: '${{ secrets.CHARTMUSEUM_USER }}'
