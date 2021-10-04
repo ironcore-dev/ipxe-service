@@ -1,6 +1,7 @@
 # ipxe-service
 
-## Status of Last Deployment:
+## Status of Last Deployments:
+<img src="https://github.com/onmetal/ipxe-service/workflows/DockerImage2Harbor/badge.svg?branch-master">
 <img src="https://github.com/onmetal/ipxe-service/workflows/ReleaseHelm/badge.svg?branch-master">
 
 ## Install iPXE into Kubernetes cluster

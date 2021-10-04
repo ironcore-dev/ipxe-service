@@ -1,4 +1,4 @@
-name: Release to harbor
+name: DockerImage2Harbor
 
 on:
   push:
