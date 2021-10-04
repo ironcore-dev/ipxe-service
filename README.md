@@ -1,5 +1,8 @@
 # ipxe-service
 
+## Status of Last Deployment:
+<img src="https://github.com/onmetal/ipxe-service/workflows/ReleaseHelm/badge.svg?branch-master">
+
 ## Install iPXE into Kubernetes cluster
 
 If you want to specify a location different that fra3,
