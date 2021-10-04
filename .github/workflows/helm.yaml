@@ -3,7 +3,7 @@ name: ReleaseHelm
 on:
   push:
     branches:
-      - helm2harbor
+      - main
 
 jobs:
   helm-lint:
