@@ -1,9 +1,9 @@
-name: Release to harbor
+name: DockerImage2Harbor
 
 on:
   push:
     branches:
-      - main
+      - fix-image-build
 
 env:
   IMAGE_NAME: core.harbor.onmetal.de/onmetal/ipxe-service
