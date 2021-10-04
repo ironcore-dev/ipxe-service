@@ -38,7 +38,7 @@ jobs:
       - name: Run chart-releaser
         uses: goodsmileduck/helm-push-action@v3.3.1
         env:
-          SOURCE_DIR: 'deploy/charts'
+          SOURCE_DIR: './chart'
           CHART_FOLDER: 'ipxe-service'
           FORCE: 'True'
           CHARTMUSEUM_URL: ' https://core.harbor.onmetal.de/chartrepo/onmetal'
