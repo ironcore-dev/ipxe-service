@@ -39,7 +39,7 @@ jobs:
         uses: goodsmileduck/helm-push-action@v3.3.1
         env:
           SOURCE_DIR: './chart'
-          CHART_FOLDER: 'ipxe-service'
+          CHART_FOLDER: '.'
           FORCE: 'True'
           CHARTMUSEUM_URL: ' https://core.harbor.onmetal.de/chartrepo/onmetal'
           CHARTMUSEUM_USER: '${{ secrets.CHARTMUSEUM_USER }}'
