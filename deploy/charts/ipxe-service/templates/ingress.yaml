@@ -1,0 +1,52 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "ipxe-service.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "ipxe-service.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        {{- if eq $.Values.location "fra3" }}
+        - {{ tpl ( .host.fra3 ) $ | quote }}
+        {{- else if eq $.Values.location "fra4" }}
+        - {{ tpl ( .host.fra4 ) $ | quote }}
+        {{- else }}
+        {{- fail "Please specify valid location (fra3, fra4, etc.) in .Values.yaml" }}
+        {{- end }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    {{- if eq $.Values.location "fra3" }}
+    - host: {{ tpl ( .host.fra3 ) $ | quote }}
+    {{- else if eq $.Values.location "fra4" }}
+    - host: {{ tpl ( .host.fra4 ) $ | quote }}
+    {{- else }}
+    {{- fail "Please specify valid location (fra3, fra4, etc.) in .Values.yaml" }}
+    {{- end }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+          {{- end }}
+    {{- end }}
+  {{- end }}
