@@ -17,7 +17,7 @@ jobs:
 
       - name: Lint Helm
         run: |
-          helm lint deploy/charts/ipxe-service --strict
+          helm lint ./chart --strict
   release:
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
