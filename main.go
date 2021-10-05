@@ -73,6 +73,9 @@ func init() {
 }
 
 func main() {
+
+    fmt.Println("iPXE is running ...")
+
 	http.HandleFunc("/", ok200)
 	http.HandleFunc("/ipxe", getChain)
 	http.HandleFunc("/ignition", getIgnition)
