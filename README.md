@@ -1,10 +1,10 @@
-# ipxe-service
-
-## Status of Last Deployments:
-<img src="https://github.com/onmetal/ipxe-service/workflows/DockerImage2Harbor/badge.svg?branch-master">
-<img src="https://github.com/onmetal/ipxe-service/workflows/ReleaseHelm/badge.svg?branch-master">
+# iPXE Service
 
 <img src="./docs/assets/logo.png" alt="Logo of the project" align="right">
+
+## Status of the last deployments:
+<img src="https://github.com/onmetal/ipxe-service/workflows/DockerImage2Harbor/badge.svg?branch-master">
+<img src="https://github.com/onmetal/ipxe-service/workflows/ReleaseHelm/badge.svg?branch-master">
 
 ## Overview 
 
