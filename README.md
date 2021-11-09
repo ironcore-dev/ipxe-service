@@ -4,52 +4,31 @@
 <img src="https://github.com/onmetal/ipxe-service/workflows/DockerImage2Harbor/badge.svg?branch-master">
 <img src="https://github.com/onmetal/ipxe-service/workflows/ReleaseHelm/badge.svg?branch-master">
 
-## Install iPXE into Kubernetes cluster
+<img src="./docs/assets/logo.png" alt="Logo of the project" align="right">
 
-If you want to specify a location different that fra3,
-please provide it as a value. Currently only fra3 and fra4 are supported
-```bash
-helm install ipxe-service ./chart [--set location=fra4]
-```
-## Run iPXE locally
+[![Build Status](https://img.shields.io/travis/npm/npm/latest.svg?style=flat-square)](https://travis-ci.org/npm/npm) [![npm](https://img.shields.io/npm/v/npm.svg?style=flat-square)](https://www.npmjs.com/package/npm) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/your/your-project/blob/master/LICENSE)
 
-To build and run iPXE locally:
-```bash
-make all
-make run
-curl http://127.0.0.1:8082
-```
+## Overview 
 
-## HTTP Requests
+This project provides an HTTP server answering to requests according to matches, resources and mappings described as kubernetes resources.
 
-For simple test use following command:
-```bash
-curl -k https://ipxe-service.local.ns1.fra3.infra.onmetal.de
-ok
-```
-To get answer from iPXE :
-```bash
-curl -k https://ipxe-service.local.ns1.fra3.infra.onmetal.de/ipxe
-#!ipxe
+It provides three different parts:
 
-set base-url http://45.86.152.1/ipxe
-kernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs gl.url=${base-url}/root.squashfs gl.live=1 ip=dhcp console=ttyS1,115200n8 console=tty0 earlypri
-ntk=ttyS1,115200n8 consoleblank=0 ignition.firstboot=1 ignition.config.url=${base-url}/ip${net0/ip}/ignition.json ignition.platform.id=metal
-initrd ${base-url}/rootfs.initrd
+ - a library for an HTTP server serving requests according to configured query-matchers, mappings, resources and an optional Discovery API for metadata
+ - a Kubernetes controller offering such a server by feeding it with configuration taken from Kubernetes resources.
+ - a Kubernetes controller implementing the discovery API based on a machine Kubernetes resource
 
-boot
-```
-## Exit codes
+This ecosystem is intended to be used to serve iPXE requests when booting machines based on predefined rules. But it can also be used as a general matching engine to match requests to configurable resources.
 
-- **11** - Failed to start IPXE Server
-- **12** - Unable to add registered types machine request to client scheme
-- **14** - Failed to list machine requests in namespace default
-- **15** - Unable to add registered types inventory to client scheme
-- **17** - Failed to list crds netdata in namespace default
-- **18** - Unable to add registered types netdata to client scheme
-- **19** - Failed to create an  client
-- **20** - Failed to list crds netdata in namespace default
-- **21** - Unable to create a client's ipxe directory
-- **22** - Unable to create a client's ipxe file
-- **23** - Unable to read the default ipxe config file
-- **33** - Not found netdata for ipv4
+## Installation, using and developing 
+
+For more details please refer to documentation folder `/docs`
+
+## Contributing 
+
+We`d love to get a feedback from you. 
+Please report bugs, suggestions or post question by opening a [Github issue]()
+
+## License
+
+[Apache License 2.0](https://github.com/helm/chart-testing/blob/main/LICENSE)
