@@ -497,7 +497,10 @@ github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQ
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
 github.com/onmetal/ipam v0.0.0-20210630141217-3447d654272f/go.mod h1:kdGfibHfb9Yqfna1Vos3ukuY5cHkBt4sqnLR5H5ZBHk=
+github.com/onmetal/ipam v0.0.0-20210721054120-e85a3a8dee4f h1:V1+jMCdeZxM/DL98KHMIxi6eyHNsTk+25pcjiCO1nnE=
 github.com/onmetal/ipam v0.0.0-20210721054120-e85a3a8dee4f/go.mod h1:z2LzD1+4hF7YdsuyJl7ARxCwOMRF0wCuQ1JRCwYJj8g=
+github.com/onmetal/ipam v0.0.0-20211029144623-1398cd13a1ae h1:aF02Sy+DAcXDTepJAU9YHKKe08FKrk2QCe5/WxGvfb0=
+github.com/onmetal/ipam v0.0.0-20211029144623-1398cd13a1ae/go.mod h1:z2LzD1+4hF7YdsuyJl7ARxCwOMRF0wCuQ1JRCwYJj8g=
 github.com/onmetal/k8s-image v0.0.0-20210429165612-c242bbbf4d67/go.mod h1:x4y7wrlN6Lh5VE9UE3btLiUq6DxL7eg43Lz+Sb78pDg=
 github.com/onmetal/k8s-image v0.0.0-20210810055504-401d469fc6ef/go.mod h1:AZzjmTzmmRLcnDFC1KrjwfPLNxmR/00MnAPlYEPc6QY=
 github.com/onmetal/k8s-image v0.0.0-20210815171444-b3c3fabdadcd/go.mod h1:hRphUHnm+s+2/0Kl6oH9mU6YjRHmG+eII4BQqqPMOOQ=
