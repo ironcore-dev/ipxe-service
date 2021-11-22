@@ -11,21 +11,19 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"text/template"
 	"time"
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
 	"gopkg.in/yaml.v1"
 
-	k8simages "github.com/onmetal/k8s-image/api/v1alpha1"
+	ipam "github.com/onmetal/ipam/api/v1alpha1"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
-	minst "github.com/onmetal/k8s-machine-instance/api/v1"
 	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
 	netdata "github.com/onmetal/netdata/api/v1"
 
-	"k8s.io/apimachinery/pkg/types"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -81,6 +79,7 @@ func main() {
 	http.HandleFunc("/ignition", getIgnition)
 	http.HandleFunc("/-/reload", reloadApp)
 	http.Handle("/metrics", promhttp.Handler())
+	http.HandleFunc("/cert", getCert)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
@@ -104,8 +103,8 @@ func ok200(w http.ResponseWriter, r *http.Request) {
 }
 
 type dataconf struct {
-	InstanceNS       string `yaml:"instance-namespace"`
-	NetdataNS        string `yaml:"netdata-namespace"`
+	ConfigmapNS      string `yaml:"configmap-namespace"`
+	IpamNS           string `yaml:"ipam-namespace"`
 	MachineRequestNS string `yaml:"machine-request-namespace"`
 	InventoryNS      string `yaml:"inventory-namespace"`
 	ImageNS          string `yaml:"k8simage-namespace"`
@@ -175,11 +174,8 @@ func getToken() (string, error) {
 
 func renderDefaultIgnition(mac string, w http.ResponseWriter) {
 	log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
-	// read ignition-definition:
-	dataIn, err := ioutil.ReadFile("/etc/ipxe-service/ignition-definition.yaml")
-	if err != nil {
-		log.Printf("Problem with default ignition /etc/ipxe-service/ignition-definition.yaml Error: %+v", err)
-	}
+	cm := getConfigMap("default")
+	dataIn := []byte(cm.Data["ignition"])
 	// render by butane to json
 	options := common.TranslateBytesOptions{
 		Raw:    true,
@@ -230,31 +226,16 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(string(resp))
 			}
 
-			var (
-				instances minst.MachineInstanceList
-				mreqs     mreq1.MachineList
-			)
-			instances = getMachineInstance(uuid)
-			if len(instances.Items) == 0 {
+			instances := getConfigMap(uuid)
+			if len(instances.Data) == 0 {
 				log.Printf("Not found instance with UUID  %s", uuid)
 				renderDefaultIgnition(mac, w)
 				return
 			}
 			// TODO handle multiple instances
-			machineReqID := instances.Items[0].Spec.MachineRequestID
-			mreqs = getMachineRequest(machineReqID)
-			if len(mreqs.Items) == 0 {
-				log.Printf("Not found machinerequest with ID  %s", machineReqID)
-				renderDefaultIgnition(mac, w)
-				return
-			}
-			userData := mreqs.Items[0].Spec.UserData
+			userData := instances.Data["ignition"]
 			log.Printf("UserData: %+v", userData)
-			// render by butane to json
-			options := common.TranslateBytesOptions{}
-			dataOut, _, err := buconfig.TranslateBytes([]byte(userData), options)
-			// return json
-			fmt.Fprintf(w, string(dataOut))
+			fmt.Fprintf(w, userData)
 		}
 	}
 }
@@ -262,10 +243,11 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 func getMac(r *http.Request) string {
 	ip := getIP(r)
 	log.Printf("Clien's IP from request: %s", ip)
-	mac := getMACbyNetdata(ip)
-	log.Printf("Client's MAC Address from Netdata: %s", mac)
+	mac := getMACbyIPAM(ip)
+	log.Printf("Client's MAC Address from IPAM: %s", mac)
 	if mac == "" {
-		log.Printf("Not found client's MAC Address in Netdata for IPv4: %s", ip)
+		log.Printf("SECURITY Error Alert!")
+		log.Printf(" Not found client's MAC Address in IPAM for IPv4: %s", ip)
 	}
 	return mac
 }
@@ -277,7 +259,6 @@ type pasrseyaml struct {
 }
 
 func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
-
 	yamlFile, err := ioutil.ReadFile("/etc/ipxe-service/ipxe-default.yaml")
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
@@ -290,49 +271,35 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 	return c
 }
 
-func getIPXEbyK8SImage(w http.ResponseWriter, imageName string) {
+func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
+	configmap := getConfigMap("default")
+	log.Printf("Configmap %+v:", configmap)
+	fmt.Fprintf(w, string(configmap.Data["ipxe"]))
+	return nil, nil
+}
+
+func getCert(w http.ResponseWriter, r *http.Request) {
 	var conf dataconf
 	conf.getConf()
 
-	if err := k8simages.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
-		os.Exit(15)
-	}
-
+	ns := conf.ConfigmapNS
 	cl := createClient()
-	k8simagecrd := k8simages.Image{}
 
-	imgNamespacedName := types.NamespacedName{
-		Namespace: conf.ImageNS,
-		Name:      imageName,
+	configmap := corev1.ConfigMap{}
+	cmNameSpace := client.ObjectKey{
+		Namespace: ns,
+		Name:      "ipxe-service-server-cert",
 	}
 
-	err := cl.Get(context.Background(), imgNamespacedName, &k8simagecrd)
+	err := cl.Get(context.Background(), cmNameSpace, &configmap)
+
 	if err != nil {
-		log.Printf("Failed to get K8S-Image crd in namespace %s: %+v", conf.ImageNS, err)
-		os.Exit(18)
+		log.Printf("Failed to list configmap in namespace %s: %+v", ns, err)
+		os.Exit(24)
 	}
 
-	k8simageKernel := k8simagecrd.Spec.Source[0].URL
-	k8simageInitrd := k8simagecrd.Spec.Source[1].URL
-	k8simageRootfs := k8simagecrd.Spec.Source[2].URL
-	fmt.Fprintf(w, "#!ipxe\n\nset base-url http://45.86.152.1/ipxe\nkernel %+v\ninitrd %+v\nrootfs %+v\nboot", k8simageKernel, k8simageInitrd, k8simageRootfs)
-}
-
-func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
-	var c pasrseyaml
-	c.getIpxeConf()
-	tmpl, err := template.ParseFiles("/etc/ipxe-service/ipxe-template")
-	if err != nil {
-		log.Println("Couldn't parse IPXE template file: ", err)
-	}
-
-	err = tmpl.ExecuteTemplate(w, "ipxe-template", c)
-	if err != nil {
-		log.Println("Couldn't execute IPXE template file: ", err)
-	}
-
-	return nil, err
+	log.Printf("Configmap %+v:", configmap)
+	fmt.Fprintf(w, configmap.Data["ca.crt"])
 }
 
 func getChain(w http.ResponseWriter, r *http.Request) {
@@ -347,7 +314,10 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 	mac = getMac(r)
 	ip := getIP(r)
 
-	if mac != "" {
+	if mac == "" {
+		log.Println("Response the default IPXE config file ...")
+		renderIpxeDefaultConfFile(w)
+	} else {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
 			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
@@ -369,26 +339,15 @@ func getChain(w http.ResponseWriter, r *http.Request) {
 				log.Println(string(resp))
 			}
 			log.Printf("Generate IPXE config for the client ...\n")
-			var (
-				instances minst.MachineInstanceList
-				mreqs     mreq1.MachineList
-			)
-			instances = getMachineInstance(uuid)
-			if len(instances.Items) == 0 {
-				log.Printf("Not found instance with UUID  %s", uuid)
+
+			instance := getConfigMap(uuid)
+			if len(instance.Data) == 0 {
+				log.Printf("Not found configmap with UUID  %s", uuid)
 				renderIpxeDefaultConfFile(w)
 				return
 			}
-			// TODO handle multiple instances
-			machineReqID := instances.Items[0].Spec.MachineRequestID
-			mreqs = getMachineRequest(machineReqID)
-			if len(mreqs.Items) == 0 {
-				log.Printf("Not found machinerequest with ID  %s", machineReqID)
-				renderIpxeDefaultConfFile(w)
-				return
-			}
-			imageName := mreqs.Items[0].Spec.Image.Name
-			getIPXEbyK8SImage(w, imageName)
+			userData := instance.Data["ipxe"]
+			fmt.Fprintf(w, userData)
 		}
 	}
 }
@@ -423,25 +382,27 @@ func getMachineRequest(uuid string) mreq1.MachineList {
 	return mreqs
 }
 
-func getMachineInstance(uuid string) minst.MachineInstanceList {
+func getConfigMap(uuid string) corev1.ConfigMap {
 	var conf dataconf
 	conf.getConf()
 
-	if err := minst.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types machine-instance to client scheme: ", err)
-		os.Exit(22)
+	cl := createClient()
+
+	configmap := corev1.ConfigMap{}
+	cmNameSpace := client.ObjectKey{
+		Namespace: conf.ConfigmapNS,
+		Name:      "ipxe-" + uuid,
 	}
 
-	cl := createClient()
-	var minstes minst.MachineInstanceList
-	err := cl.List(context.Background(), &minstes, client.InNamespace(conf.InstanceNS), client.MatchingLabels{"id": uuid})
+	err := cl.Get(context.Background(), cmNameSpace, &configmap)
+
 	if err != nil {
-		log.Printf("Failed to list machine-instance in namespace %s: %+v", conf.InstanceNS, err)
+		log.Printf("Failed to list configmap in namespace %s: %+v", conf.ConfigmapNS, err)
 		os.Exit(24)
 	}
 
-	log.Printf("Machine-instances %+v:", minstes)
-	return minstes
+	log.Printf("Configmap %+v:", configmap)
+	return configmap
 }
 
 func getUUIDbyInventory(mac string) string {
@@ -455,7 +416,7 @@ func getUUIDbyInventory(mac string) string {
 
 	cl := createClient()
 
-	mac = strings.ReplaceAll(mac, ":", "")
+	mac = "machine.onmetal.de/mac-address-" + strings.ReplaceAll(mac, ":", "")
 	var inventory inv.InventoryList
 	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{mac: ""})
 	if err != nil {
@@ -472,25 +433,25 @@ func getUUIDbyInventory(mac string) string {
 	return clientUUID
 }
 
-func getMACbyNetdata(ip string) string {
+func getMACbyIPAM(ip string) string {
 	var conf dataconf
 	conf.getConf()
 
-	if err := netdata.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types netdata to client scheme:", err)
+	if err := ipam.AddToScheme(scheme.Scheme); err != nil {
+		log.Fatal("Unable to add registered types ipam to client scheme:", err)
 		os.Exit(18)
 	}
 
 	cl := createClient()
 
-	var crds netdata.NetdataList
+	var crds ipam.IPList
 	searchLabel := netdata.LabelForIP(ip)
 	log.Printf("Search label: %s", searchLabel)
 
-	err := cl.List(context.Background(), &crds, client.InNamespace(conf.NetdataNS), client.MatchingLabels{searchLabel: ""})
+	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{searchLabel: ""})
 	if err != nil {
-		log.Fatal("Failed to list crds netdata in namespace default:", err)
-		os.Exit(20)
+		log.Printf("Failed to list crds ipam in namespace default:", err)
+		return ""
 	}
 
 	// TODO:
@@ -499,7 +460,13 @@ func getMACbyNetdata(ip string) string {
 
 	var clientMACAddr string
 	if len(crds.Items) > 0 {
-		clientMACAddr = crds.Items[0].Spec.MACAddress
+		for k, _ := range crds.Items[0].ObjectMeta.Labels {
+			if strings.Contains(k, "mac-") {
+				tempstr := strings.ReplaceAll(k, "mac-", "")
+				clientMACAddr = strings.ReplaceAll(tempstr, "_", ":")
+				break
+			}
+		}
 	}
 	return clientMACAddr
 }

@@ -6,6 +6,7 @@ require (
 	github.com/coreos/butane v0.12.1
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/onmetal/ipam v0.0.0-20211029144623-1398cd13a1ae // indirect
 	github.com/onmetal/k8s-image v0.0.0-20210829194124-989dac3e4e7f
 	github.com/onmetal/k8s-inventory v0.0.0-20210608091530-5af0dfa20b72
 	github.com/onmetal/k8s-machine-instance v0.0.0-20210812162659-331455e053d8
