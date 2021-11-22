@@ -2,7 +2,7 @@
 
 <img src="./assets/logo.png" alt="Logo of the project" align="right">
 
-## Overview 
+## Overview
 
 This project provides an HTTP server answering to requests according to matches, resources and mappings described as kubernetes resources.
 
@@ -14,7 +14,7 @@ It provides three different parts:
 
 This ecosystem is intended to be used to serve iPXE requests when booting machines based on predefined rules. But it can also be used as a general matching engine to match requests to configurable resources.
 
-## Instalation  
+## Instalation
 
 ### Install iPXE into Kubernetes cluster
 If you want to specify a location different that fra3, please provide it as a value. Currently only fra3 and fra4 are supported
@@ -37,7 +37,7 @@ curl http://127.0.0.1:8082
 Here's a brief intro about what a developer must do in order to start developing the project further:
 
 ```shell
-git clone https://github.com/onmetal/ipxe-service.git 
+git clone https://github.com/onmetal/ipxe-service.git
 cd ipxe-service/
 helm install ipxe-service ./chart
 ```
@@ -49,6 +49,11 @@ For simple test use following command:
 ```shell
 curl -k https://ipxe-service.local.ns1.fra3.infra.onmetal.de
 ok
+```
+
+To get ca certificate for validate https
+```shell
+curl -k https://ipxe-service.local.ns1.fra3.infra.onmetal.de/cert
 ```
 
 To get answer from iPXE:
