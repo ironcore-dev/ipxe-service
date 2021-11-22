@@ -18,9 +18,9 @@ spec:
     - hosts:
         {{- range .hosts }}
         {{- if eq $.Values.location "fra3" }}
-        - {{ tpl ( .host.fra3 ) $ | quote }}
+        - {{ tpl ( $.Values.hosts.fra3 ) $ | quote }}
         {{- else if eq $.Values.location "fra4" }}
-        - {{ tpl ( .host.fra4 ) $ | quote }}
+        - {{ tpl ( $.Values.hosts.fra4 ) $ | quote }}
         {{- else }}
         {{- fail "Please specify valid location (fra3, fra4, etc.) in .Values.yaml" }}
         {{- end }}
@@ -31,9 +31,9 @@ spec:
   rules:
     {{- range .Values.ingress.hosts }}
     {{- if eq $.Values.location "fra3" }}
-    - host: {{ tpl ( .host.fra3 ) $ | quote }}
+    - host: {{ tpl ( $.Values.hosts.fra3 ) $ | quote }}
     {{- else if eq $.Values.location "fra4" }}
-    - host: {{ tpl ( .host.fra4 ) $ | quote }}
+    - host: {{ tpl ( $.Values.hosts.fra4 ) $ | quote }}
     {{- else }}
     {{- fail "Please specify valid location (fra3, fra4, etc.) in .Values.yaml" }}
     {{- end }}
