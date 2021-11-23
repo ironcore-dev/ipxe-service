@@ -42,5 +42,5 @@ jobs:
           CHART_FOLDER: 'ipxe-service'
           FORCE: 'True'
           CHARTMUSEUM_URL: ' https://core.harbor.onmetal.de/chartrepo/onmetal'
-          CHARTMUSEUM_USER: '${{ secrets.CHARTMUSEUM_USER }}'
-          CHARTMUSEUM_PASSWORD: ${{ secrets.CHARTMUSEUM_PASSWORD }}
+          CHARTMUSEUM_USER: ${{ secrets.DOCKER_USERNAME }}
+          CHARTMUSEUM_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
