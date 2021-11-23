@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/coreos/butane v0.12.1
 	github.com/onmetal/ipam v0.0.0-20211029144623-1398cd13a1ae
-	github.com/onmetal/k8s-inventory v0.0.0-20210608091530-5af0dfa20b72
+	github.com/onmetal/k8s-inventory v0.0.1
 	github.com/onmetal/k8s-machine-requests v0.0.0-20210901134901-3a2a3b92842c
 	github.com/onmetal/machine-operator v0.9.0
 	github.com/onmetal/netdata v0.0.0-20210906100955-18e190d4cdee
@@ -17,6 +17,13 @@ require (
 )
 
 require (
+	cloud.google.com/go v0.65.0 // indirect
+	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
+	github.com/Azure/go-autorest/autorest v0.11.12 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.5 // indirect
+	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
+	github.com/Azure/go-autorest/logger v0.2.0 // indirect
+	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/clarketm/json v1.14.1 // indirect
@@ -26,10 +33,13 @@ require (
 	github.com/coreos/go-systemd/v22 v22.0.0 // indirect
 	github.com/coreos/ignition/v2 v2.9.1-0.20210429055457-20d5d693f79a // indirect
 	github.com/coreos/vcontext v0.0.0-20210407161507-4ee6c745c8bd // indirect
+	github.com/d4l3k/messagediff v1.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/evanphx/json-patch v4.11.0+incompatible // indirect
+	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-logr/logr v0.4.0 // indirect
+	github.com/go-logr/zapr v0.4.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -54,6 +64,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c // indirect
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect

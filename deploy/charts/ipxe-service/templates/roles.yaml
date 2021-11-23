@@ -5,6 +5,22 @@ metadata:
   name: netdata-reader
 rules:
 - apiGroups:
+  - ipam.onmetal.de
+  resources:
+  - ips
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - machine.onmetal.de
   resources:
   - netdata
@@ -27,4 +43,19 @@ subjects:
 - kind: ServiceAccount
   name: ipxe-service
   namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: netdata-view-binding
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: netdata-reader
+subjects:
+- kind: ServiceAccount
+  name: ipxe-service
+  namespace: {{ .Release.Namespace }}
+
 

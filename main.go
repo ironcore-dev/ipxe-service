@@ -19,7 +19,6 @@ import (
 
 	ipam "github.com/onmetal/ipam/api/v1alpha1"
 	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
-	mreq1 "github.com/onmetal/k8s-machine-requests/api/v1alpha1"
 	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
 	netdata "github.com/onmetal/netdata/api/v1"
 
@@ -72,7 +71,7 @@ func init() {
 
 func main() {
 
-    fmt.Println("iPXE is running ...")
+	fmt.Println("iPXE is running ...")
 
 	http.HandleFunc("/", ok200)
 	http.HandleFunc("/ipxe", getChain)
@@ -192,7 +191,6 @@ func renderDefaultIgnition(mac string, w http.ResponseWriter) {
 }
 
 func getIgnition(w http.ResponseWriter, r *http.Request) {
-	log.Print("TODO make autorestart if configmap was changed")
 	var mac string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
 		requestIGNITIONDuration.WithLabelValues(mac).Observe(v)
@@ -204,7 +202,7 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 
 	mac = getMac(r)
 	if mac == "" {
-		log.Printf("Not found MAC in Netdata, %s", " returned 204")
+		log.Printf("Not found MAC in IPAM ips, %s", " returned 204")
 		http.Error(w, "Not found netdata", http.StatusNoContent)
 	} else {
 		uuid := getUUIDbyInventory(mac)
@@ -361,27 +359,6 @@ func createClient() client.Client {
 	return cl
 }
 
-func getMachineRequest(uuid string) mreq1.MachineList {
-	var conf dataconf
-	conf.getConf()
-
-	if err := mreq1.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types machine request to client scheme: ", err)
-		os.Exit(12)
-	}
-
-	cl := createClient()
-	var mreqs mreq1.MachineList
-	err := cl.List(context.Background(), &mreqs, client.InNamespace(conf.MachineRequestNS), client.MatchingLabels{"id": uuid})
-	if err != nil {
-		log.Fatal("Failed to list machine requests in namespace default: ", err)
-		os.Exit(14)
-	}
-
-	log.Printf("Machine requests %+v:", mreqs)
-	return mreqs
-}
-
 func getConfigMap(uuid string) corev1.ConfigMap {
 	var conf dataconf
 	conf.getConf()
@@ -420,7 +397,7 @@ func getUUIDbyInventory(mac string) string {
 	var inventory inv.InventoryList
 	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{mac: ""})
 	if err != nil {
-		log.Fatal("Failed to list crds inventories in namespace default:", err)
+		log.Printf("Failed to list crds inventories in namespace %s: %+v", conf.InventoryNS, err)
 		os.Exit(17)
 	}
 
@@ -428,7 +405,7 @@ func getUUIDbyInventory(mac string) string {
 	if len(inventory.Items) > 0 {
 		clientUUID = inventory.Items[0].Spec.System.ID
 	}
-	log.Printf("Search inventories for MAC: %+v", clientUUID)
+	log.Printf("Found inventories for MAC: %+v", clientUUID)
 
 	return clientUUID
 }

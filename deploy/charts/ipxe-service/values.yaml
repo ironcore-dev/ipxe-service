@@ -19,7 +19,7 @@ labels:
 
 image:
   repository: core.harbor.onmetal.de/onmetal/ipxe-service
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
