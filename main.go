@@ -18,9 +18,8 @@ import (
 	"gopkg.in/yaml.v1"
 
 	ipam "github.com/onmetal/ipam/api/v1alpha1"
-	inv "github.com/onmetal/k8s-inventory/api/v1alpha1"
-	"github.com/onmetal/machine-operator/app/machine-event-handler/logger"
-	netdata "github.com/onmetal/netdata/api/v1"
+	"github.com/onmetal/metal-api-gateway/app/logger"
+	inv "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -422,12 +421,12 @@ func getMACbyIPAM(ip string) string {
 	cl := createClient()
 
 	var crds ipam.IPList
-	searchLabel := netdata.LabelForIP(ip)
-	log.Printf("Search label: %s", searchLabel)
 
-	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{searchLabel: ""})
+	log.Printf("Search label: ip == %s", ip)
+
+	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{"ip": ip})
 	if err != nil {
-		log.Printf("Failed to list crds ipam in namespace default:", err)
+		log.Printf("Failed to list crds ipam in namespace default: %+v", err)
 		return ""
 	}
 
@@ -438,9 +437,8 @@ func getMACbyIPAM(ip string) string {
 	var clientMACAddr string
 	if len(crds.Items) > 0 {
 		for k, _ := range crds.Items[0].ObjectMeta.Labels {
-			if strings.Contains(k, "mac-") {
-				tempstr := strings.ReplaceAll(k, "mac-", "")
-				clientMACAddr = strings.ReplaceAll(tempstr, "_", ":")
+			if strings.Contains(k, "mac") {
+				clientMACAddr = crds.Items[0].ObjectMeta.Labels["mac"]
 				break
 			}
 		}

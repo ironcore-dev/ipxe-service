@@ -3,9 +3,10 @@ kind: IP
 metadata:
   name: ipv4-ip-ip-sample
   labels:
-    ip-127_0_0_1: ""
-    mac-82_82_e1_00_66_7f: ""
+    ip: "127.0.0.1"
+    mac: "8282e100667f"
 spec:
-  subnetName: ipv4-child-cidr-subnet-sample
+  subnet:
+    name: ipv4-child-cidr-subnet-sample
   ip: 127.0.0.1
 
