@@ -72,10 +72,33 @@ func TestIgnition204Handler(t *testing.T) {
 			status, http.StatusNoContent)
 	}
 
-	expected := `Not found netdata
+	expected := `Not found ipam ip obj
 `
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
+			rr.Body.String(), expected)
+	}
+}
+
+func TestIgnPartHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/ign/ignition-testpart", nil)
+	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(getIgnition)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	expected := `{"ignition":{"version":"3.2.0"},"passwd":{"users":[{"name":"testuser","sshAuthorizedKeys":["ssh-rsa TTTT"]}]}}`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
 }

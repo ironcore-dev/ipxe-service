@@ -78,6 +78,7 @@ func main() {
 	http.HandleFunc("/-/reload", reloadApp)
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/cert", getCert)
+	http.HandleFunc("/ign/", getIgnition)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
@@ -170,10 +171,15 @@ func getToken() (string, error) {
 	return string(data), nil
 }
 
-func renderDefaultIgnition(mac string, w http.ResponseWriter) {
+func renderDefaultIgnition(mac string, w http.ResponseWriter, partKey string) {
 	log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
 	cm := getConfigMap("default")
-	dataIn := []byte(cm.Data["ignition"])
+	var dataIn []byte
+	if len(partKey) > 0 {
+		dataIn = []byte(cm.Data[partKey])
+	} else {
+		dataIn = []byte(cm.Data["ignition"])
+	}
 	// render by butane to json
 	options := common.TranslateBytesOptions{
 		Raw:    true,
@@ -191,6 +197,8 @@ func renderDefaultIgnition(mac string, w http.ResponseWriter) {
 
 func getIgnition(w http.ResponseWriter, r *http.Request) {
 	var mac string
+	var partKey string
+	var userData string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
 		requestIGNITIONDuration.WithLabelValues(mac).Observe(v)
 	}))
@@ -199,41 +207,53 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 		timer.ObserveDuration()
 	}()
 
+	if strings.LastIndex(r.URL.Path, "ign/") >= 0 {
+		info := strings.Split(r.URL.Path, "ign/")
+		partKey = info[len(info)-1]
+	}
+
 	mac = getMac(r)
 	if mac == "" {
 		log.Printf("Not found MAC in IPAM ips, %s", " returned 204")
-		http.Error(w, "Not found netdata", http.StatusNoContent)
+		http.Error(w, "Not found ipam ip obj", http.StatusNoContent)
 	} else {
 		uuid := getUUIDbyInventory(mac)
 		if uuid == "" {
 			log.Printf("Not found inventory UUID for MAC %s", mac)
-			renderDefaultIgnition(mac, w)
+			renderDefaultIgnition(mac, w, partKey)
 		} else {
 			ip := getIP(r)
-			e := &event{
-				UUID:    uuid,
-				Reason:  "Ignition",
-				Message: fmt.Sprintf("Ignition request for ip %s and  mac %s ", ip, mac),
-			}
-			h := newHttp()
-			requestBody, _ := json.Marshal(e)
-			resp, err := h.postRequest(requestBody)
-			if err != nil {
-				h.log.Info("can't send a request", err)
-				fmt.Println(string(resp))
-			}
-
+			postEvent(ip, mac, uuid)
 			instances := getConfigMap(uuid)
 			if len(instances.Data) == 0 {
 				log.Printf("Not found instance with UUID  %s", uuid)
-				renderDefaultIgnition(mac, w)
+				renderDefaultIgnition(mac, w, partKey)
 				return
 			}
 			// TODO handle multiple instances
-			userData := instances.Data["ignition"]
+			if len(partKey) > 0 {
+				userData = instances.Data[partKey]
+			} else {
+				userData = instances.Data["ignition"]
+			}
 			log.Printf("UserData: %+v", userData)
 			fmt.Fprintf(w, userData)
 		}
+	}
+}
+
+func postEvent(ip string, mac string, uuid string) {
+	e := &event{
+		UUID:    uuid,
+		Reason:  "Ignition",
+		Message: fmt.Sprintf("Ignition request for ip %s and  mac %s ", ip, mac),
+	}
+	h := newHttp()
+	requestBody, _ := json.Marshal(e)
+	resp, err := h.postRequest(requestBody)
+	if err != nil {
+		h.log.Info("can't send a request", err)
+		fmt.Println(string(resp))
 	}
 }
 

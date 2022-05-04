@@ -155,6 +155,13 @@ items:
       vmType: none
 - apiVersion: v1
   data:
+    ignition-testpart: |
+      variant: fcos
+      version: 1.3.0
+      passwd:
+        users:
+          - name: testuser
+            ssh_authorized_keys: [ "ssh-rsa TTTT" ]
     ignition: |
       variant: fcos
       version: 1.3.0
