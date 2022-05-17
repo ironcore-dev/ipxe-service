@@ -1,0 +1,6 @@
+configmap-namespace: onmetal
+ipam-namespace: onmetal
+machine-request-namespace: onmetal
+inventory-namespace: onmetal
+k8simage-namespace: onmetal
+

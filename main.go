@@ -78,7 +78,6 @@ func main() {
 	http.HandleFunc("/-/reload", reloadApp)
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/cert", getCert)
-	http.HandleFunc("/ign/", getIgnition)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatal("Failed to start IPXE Server", err)
 		os.Exit(11)
@@ -172,13 +171,25 @@ func getToken() (string, error) {
 }
 
 func renderDefaultIgnition(mac string, w http.ResponseWriter, partKey string) {
-	log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
-	cm := getConfigMap("default")
 	var dataIn []byte
-	if len(partKey) > 0 {
-		dataIn = []byte(cm.Data[partKey])
-	} else {
-		dataIn = []byte(cm.Data["ignition"])
+	log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
+	secret := getSecret("default")
+	if len(secret.Data) > 0 {
+		if len(partKey) > 0 && len(secret.Data[partKey]) > 0 {
+			dataIn = secret.Data[partKey]
+		} else {
+			if len(secret.Data["ignition"]) > 0 {
+				dataIn = secret.Data["ignition"]
+			}
+		}
+	}
+	if len(dataIn) == 0 {
+		cm := getConfigMap("default")
+		if len(partKey) > 0 {
+			dataIn = []byte(cm.Data[partKey])
+		} else {
+			dataIn = []byte(cm.Data["ignition"])
+		}
 	}
 	// render by butane to json
 	options := common.TranslateBytesOptions{
@@ -189,6 +200,7 @@ func renderDefaultIgnition(mac string, w http.ResponseWriter, partKey string) {
 	options.NoResourceAutoCompression = true
 	dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
 	if err != nil {
+		log.Printf("\nError in ignition rendering.dataIn is : %+v\n", dataIn)
 		log.Printf("Error in ignition rendering: %+v", err)
 	}
 	// return json
@@ -207,9 +219,13 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 		timer.ObserveDuration()
 	}()
 
-	if strings.LastIndex(r.URL.Path, "ign/") >= 0 {
-		info := strings.Split(r.URL.Path, "ign/")
+	if strings.LastIndex(r.URL.Path, "ignition/") >= 0 {
+		info := strings.Split(r.URL.Path, "ignition/")
 		partKey = info[len(info)-1]
+		if len(partKey) > 0 {
+			partKey = "ignition-" + partKey
+			log.Printf("partKey is, %s", partKey)
+		}
 	}
 
 	mac = getMac(r)
@@ -224,20 +240,37 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 		} else {
 			ip := getIP(r)
 			postEvent(ip, mac, uuid)
-			instances := getConfigMap(uuid)
-			if len(instances.Data) == 0 {
-				log.Printf("Not found instance with UUID  %s", uuid)
-				renderDefaultIgnition(mac, w, partKey)
-				return
+			// get secret
+			secret := getSecret(uuid)
+			if len(secret.Data) > 0 {
+				if len(partKey) > 0 && len(secret.Data[partKey]) > 0 {
+					userData = string(secret.Data[partKey])
+				} else {
+					if len(secret.Data["ignition"]) > 0 {
+						userData = string(secret.Data["ignition"])
+					}
+				}
+
 			}
-			// TODO handle multiple instances
-			if len(partKey) > 0 {
-				userData = instances.Data[partKey]
-			} else {
-				userData = instances.Data["ignition"]
+			// appear here only if secret not contain data
+			// get configmap if no secrets
+			if len(userData) == 0 {
+				cm := getConfigMap(uuid)
+				if len(cm.Data) == 0 {
+					log.Printf("Not found instance with UUID  %s", uuid)
+					renderDefaultIgnition(mac, w, partKey)
+					return
+				}
+				// TODO handle multiple instances
+				if len(partKey) > 0 {
+					userData = cm.Data[partKey]
+				} else {
+					userData = cm.Data["ignition"]
+				}
 			}
 			log.Printf("UserData: %+v", userData)
 			fmt.Fprintf(w, userData)
+			return
 		}
 	}
 }
@@ -252,7 +285,7 @@ func postEvent(ip string, mac string, uuid string) {
 	requestBody, _ := json.Marshal(e)
 	resp, err := h.postRequest(requestBody)
 	if err != nil {
-		h.log.Info("can't send a request", err)
+		h.log.Error("can't send a request", err)
 		fmt.Println(string(resp))
 	}
 }
@@ -378,6 +411,28 @@ func createClient() client.Client {
 	return cl
 }
 
+func getSecret(uuid string) corev1.Secret {
+	var conf dataconf
+	conf.getConf()
+
+	cl := createClient()
+
+	secret := corev1.Secret{}
+	cmNameSpace := client.ObjectKey{
+		Namespace: conf.ConfigmapNS,
+		Name:      "ipxe-" + uuid,
+	}
+
+	err := cl.Get(context.Background(), cmNameSpace, &secret)
+
+	if err != nil {
+		log.Printf("Failed to list secret in namespace %s: %+v", conf.ConfigmapNS, err)
+	}
+
+	log.Printf("Secret %+v:", secret)
+	return secret
+}
+
 func getConfigMap(uuid string) corev1.ConfigMap {
 	var conf dataconf
 	conf.getConf()
@@ -394,7 +449,6 @@ func getConfigMap(uuid string) corev1.ConfigMap {
 
 	if err != nil {
 		log.Printf("Failed to list configmap in namespace %s: %+v", conf.ConfigmapNS, err)
-		os.Exit(24)
 	}
 
 	log.Printf("Configmap %+v:", configmap)

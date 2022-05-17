@@ -3,7 +3,6 @@ items:
 - apiVersion: machine.onmetal.de/v1alpha1
   kind: Inventory
   metadata:
-    creationTimestamp: "2022-04-21T06:08:49Z"
     generation: 1
     labels:
       machine.onmetal.de/leased-size: m5.metal
@@ -46,9 +45,6 @@ items:
       operation: Update
       time: "2022-04-21T06:08:49Z"
     name: a967954c-3475-11b2-a85c-84d8b4f8cd2d
-    namespace: default
-    resourceVersion: "59770"
-    uid: cd620092-64af-491f-ab3f-cb3627e85263
   spec:
     blocks:
     - model: SAMSUNG MZVLW256HEHP-000L7
@@ -177,23 +173,20 @@ items:
       boot
   kind: ConfigMap
   metadata:
-    creationTimestamp: "2022-04-21T06:12:57Z"
     name: ipxe-default
-    namespace: default
-    resourceVersion: "60305"
-    uid: 0121b9c4-b8af-4993-9a8a-9f06bc541de3
+- apiVersion: v1
+  data:
+    ignition-fromsecret: dmFyaWFudDogZmNvcwp2ZXJzaW9uOiAxLjMuMApzdG9yYWdlOgogIGZpbGVzOgogICAgLSBvdmVyd3JpdGU6IHRydWUKICAgICAgcGF0aDogL3Jvb3QvaW5zdGFsbC5zaAogICAgICBjb250ZW50czoKICAgICAgICBzb3VyY2U6ICJodHRwOi8vNDUuODYuMTUyLjEvaW5zdGFsbC1rdWJlcm5ldGVzLWZyb20tc2NyYXRjaC5zaCIKICAgICAgbW9kZTogNDkzCiAgICAtIG92ZXJ3cml0ZTogdHJ1ZQogICAgICBwYXRoOiAvZXRjL2luaXQuZC9oZWxwZXIuc2gKICAgICAgY29udGVudHM6CiAgICAgICAgY29tcHJlc3Npb246ICJnemlwIgogICAgICAgIHNvdXJjZTogImRhdGE6O2Jhc2U2NCxINHNJQUFBQUFBQUMvNlNPUDAvRE1CREZkMytLaC9HUVZIS09kR0ZBcWNTQXhBSU1zRkdRVXZ0Q0xMbE9pQjBxcEh4NDFKWlVGU3ZiNmYyNTM3dThvREVPdEhHQk9IeGhVOGRXQ005MTVGaEpsWDBNM0VON3lQdW41NWZIMjRlN1NvS0dNVkQ4am9tM2xnSW4xOUN4UUl0Y2lsM3JQT01WS21QVGRwRHE2RWxNMkJsb24wUDdoQ1hlYm1BN0FRRC9vZTM3MFRQM0tJWHRBb3UyaXluVVc2NVVadXFFWHpvbXJBL1pBK0g4L1d6RWJraVlNQWIzQ1czK3lxbDJIanFVSjkyTUNkcFcwTTB5RnlLeWhYYVE5RjR1cjR1cm9pektZa0ZXZ2pnWjJrK0tvaDljU0Eza0tRRTFiNFhLNWpOZkI0blY2cno0RXdBQS8vOE1wZnU0b2dFQUFBPT0iCiAgICAgIG1vZGU6IDQ5MwpzeXN0ZW1kOgogIHVuaXRzOgogICAgLSBkcm9waW5zOgogICAgICAgIC0gY29udGVudHM6ICJbU2VydmljZV1cbkV4ZWNTdGFydFBvc3Q9L2V0Yy9pbml0LmQvaGVscGVyLnNoXG4iCiAgICAgICAgICBuYW1lOiAidXBkYXRlaG9zdHMuY29uZiIKICAgICAgZW5hYmxlZDogdHJ1ZQogICAgICBuYW1lOiAic3lzdGVtZC1ob3N0bmFtZWQuc2VydmljZSIKCgo=
+  kind: Secret
+  metadata:
+    name: ipxe-default
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    creationTimestamp: "2022-04-21T06:12:26Z"
     name: ipxe-a967954c-3475-11b2-a85c-84d8b4f8cd2d
-    namespace: default
-    resourceVersion: "59924"
-    uid: c6187b38-1986-4721-8368-6551cd5604d9
 - apiVersion: ipam.onmetal.de/v1alpha1
   kind: IP
   metadata:
-    creationTimestamp: "2022-04-21T06:01:12Z"
     generation: 1
     labels:
       ip: 127.0.0.1
@@ -217,9 +210,6 @@ items:
       operation: Update
       time: "2022-04-21T06:01:12Z"
     name: ipv4-ip-ip-sample
-    namespace: default
-    resourceVersion: "59447"
-    uid: a1ff41c7-ab7b-4eb3-baeb-0215da814079
   spec:
     ip: 127.0.0.1
     subnet:

@@ -25,7 +25,5 @@ kustomize: ## Download kustomize locally if necessary.
   $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@v4.4.1)
 
 install: kustomize ## Install services into the K8s cluster specified in ~/.kube/config. This requires IMG to be available for the cluster.
-  #cd config/default/server && $(KUSTOMIZE) edit set image apiserver=${IMG}
-  kubectl apply -k config/default
-
-
+	#cd config/default/server && $(KUSTOMIZE) edit set image apiserver=${IMG}
+	kubectl apply -k config/default

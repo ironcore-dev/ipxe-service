@@ -81,7 +81,7 @@ func TestIgnition204Handler(t *testing.T) {
 }
 
 func TestIgnPartHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/ign/ignition-testpart", nil)
+	req, err := http.NewRequest("GET", "/ignition/testpart", nil)
 	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
 	if err != nil {
 		t.Fatal(err)
@@ -97,6 +97,28 @@ func TestIgnPartHandler(t *testing.T) {
 	}
 
 	expected := `{"ignition":{"version":"3.2.0"},"passwd":{"users":[{"name":"testuser","sshAuthorizedKeys":["ssh-rsa TTTT"]}]}}`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+func TestIgnSecretPartHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/ignition/fromsecret", nil)
+	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(getIgnition)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	expected := `{"ignition":{"version":"3.2.0"},"storage":{"files":[{"overwrite":true,"path":"/root/install.sh","contents":{"source":"http://45.86.152.1/install-kubernetes-from-scratch.sh"},"mode":493},{"overwrite":true,"path":"/etc/init.d/helper.sh","contents":{"compression":"gzip","source":"data:;base64,H4sIAAAAAAAC/6SOP0/DMBDFd3+Kh/GQVHKOdGFAqcSAxAIMsFGQUvtCLLlOiB0qpHx41JZUFSvb6f2537u8oDEOtHGBOHxhU8dWCM915FhJlX0M3EN7yPun55fH24e7SoKGMVD8jom3lgIn19CxQItcil3rPOMVKmPTdpDq6ElM2Blon0P7hCXebmA7AQD/oe370TP3KIXtAou2iynUW65UZuqEXzomrA/ZA+H8/WzEbkiYMAb3CW3+yql2HjqUJ92MCdpW0M0yFyKyhXaQ9F4ur4uroizKYkFWgjgZ2k+Koh9cSA3kKQE1b4XK5jNfB4nV6rz4EwAA//8Mpfu4ogEAAA=="},"mode":493}]},"systemd":{"units":[{"dropins":[{"contents":"[Service]\nExecStartPost=/etc/init.d/helper.sh\n","name":"updatehosts.conf"}],"enabled":true,"name":"systemd-hostnamed.service"}]}}`
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
