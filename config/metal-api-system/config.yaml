@@ -1,0 +1,7 @@
+configmap-namespace: metal-api-system
+ipam-namespace: metal-api-system
+machine-request-namespace: metal-api-system
+inventory-namespace: metal-api-system
+k8simage-namespace: metal-api-system
+
+
