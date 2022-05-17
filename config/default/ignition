@@ -4,8 +4,8 @@ ignition:
   config:
     merge:
       - source: http://45.86.152.1/ipxe/passwd.json
-      - source: http://ipxe-service.local.ns1.fra3.infra.onmetal.de/ign/utils
-      - source: http://ipxe-service.local.ns1.fra3.infra.onmetal.de/ign/inventory
+      - source: http://ipxe-service.local.ns1.fra3.infra.onmetal.de/ignition/utils
+      - source: http://ipxe-service.local.ns1.fra3.infra.onmetal.de/ignition/inventory
 storage:
   files:
     - path: /etc/hostname
