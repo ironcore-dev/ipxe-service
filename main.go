@@ -74,6 +74,7 @@ func main() {
 
 	http.HandleFunc("/", ok200)
 	http.HandleFunc("/ipxe", getChain)
+	http.HandleFunc("/ignition/", getIgnition)
 	http.HandleFunc("/ignition", getIgnition)
 	http.HandleFunc("/-/reload", reloadApp)
 	http.Handle("/metrics", promhttp.Handler())

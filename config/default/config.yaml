@@ -1,6 +1,6 @@
-configmap-namespace: onmetal
-ipam-namespace: onmetal
-machine-request-namespace: onmetal
-inventory-namespace: onmetal
-k8simage-namespace: onmetal
+configmap-namespace: oob-controller-system
+ipam-namespace: oob-controller-system
+machine-request-namespace: oob-controller-system
+inventory-namespace: oob-controller-system
+k8simage-namespace: oob-controller-system
 
