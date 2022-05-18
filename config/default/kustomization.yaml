@@ -18,6 +18,10 @@ configMapGenerator:
 - name: ipxe-default
   files:
     - ipxe
+
+secretGenerator:
+- name: ipxe-default
+  files:
     - ignition
-    - utils
-    - inventory
+    - ignition-utils
+    - ignition-inventory
