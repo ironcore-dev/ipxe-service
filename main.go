@@ -47,6 +47,7 @@ type event struct {
 }
 
 var (
+	conf                = getConf()
 	requestIPXEDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "ipxe_request_duration_seconds",
 		Help:    "Histogram for the runtime of a simple ipxe(getChain) function.",
@@ -109,11 +110,31 @@ type dataconf struct {
 	ImageNS          string `yaml:"k8simage-namespace"`
 }
 
-func (c *dataconf) getConf() *dataconf {
+func getInClusterNamespace() (string, error) {
+	ns, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err != nil && !os.IsNotExist(err) {
+		return "", fmt.Errorf("cannot determine in-cluster namespace: %w", err)
+	}
+	return string(ns), nil
+}
+
+func getConf() dataconf {
+	var c dataconf
 	yamlFile, err := ioutil.ReadFile("/etc/ipxe-service/config.yaml")
 	if err != nil {
-		log.Fatalf("yamlFile.Get err   #%v ", err)
-		os.Exit(21)
+		log.Printf("yamlFile.Get err   #%v \n Application will use current namespace for everything\n", err)
+		ns, _ := getInClusterNamespace()
+		if len(ns) == 0 {
+			ns = "default"
+		}
+		c := dataconf{
+			ConfigmapNS:      ns,
+			IpamNS:           ns,
+			MachineRequestNS: ns,
+			InventoryNS:      ns,
+			ImageNS:          ns}
+		log.Printf("Config is #%+v ", c)
+		return c
 	}
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {
@@ -330,9 +351,6 @@ func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
 }
 
 func getCert(w http.ResponseWriter, r *http.Request) {
-	var conf dataconf
-	conf.getConf()
-
 	ns := conf.ConfigmapNS
 	cl := createClient()
 
@@ -413,9 +431,6 @@ func createClient() client.Client {
 }
 
 func getSecret(uuid string) corev1.Secret {
-	var conf dataconf
-	conf.getConf()
-
 	cl := createClient()
 
 	secret := corev1.Secret{}
@@ -435,9 +450,6 @@ func getSecret(uuid string) corev1.Secret {
 }
 
 func getConfigMap(uuid string) corev1.ConfigMap {
-	var conf dataconf
-	conf.getConf()
-
 	cl := createClient()
 
 	configmap := corev1.ConfigMap{}
@@ -457,9 +469,6 @@ func getConfigMap(uuid string) corev1.ConfigMap {
 }
 
 func getUUIDbyInventory(mac string) string {
-	var conf dataconf
-	conf.getConf()
-
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 		os.Exit(15)
@@ -485,9 +494,6 @@ func getUUIDbyInventory(mac string) string {
 }
 
 func getMACbyIPAM(ip string) string {
-	var conf dataconf
-	conf.getConf()
-
 	if err := ipam.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types ipam to client scheme:", err)
 		os.Exit(18)
@@ -497,7 +503,7 @@ func getMACbyIPAM(ip string) string {
 
 	var crds ipam.IPList
 
-	log.Printf("Search label: ip == %s", ip)
+	log.Printf("Search label: ip == %s, namespace = %s", ip, conf.IpamNS)
 
 	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{"ip": ip})
 	if err != nil {
