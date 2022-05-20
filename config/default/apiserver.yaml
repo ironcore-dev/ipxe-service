@@ -86,7 +86,7 @@ spec:
           name: ipxe-default
       - name: ipxe-default-secret
         secret:
-          name: ipxe-default
+          secretName: ipxe-default
           optional: true
       - name: ipxe-service-config
         configMap:
@@ -118,6 +118,12 @@ spec:
             readOnly: true
         - name: ipxe-service
           volumeMounts:
+          - name: ipxe-default-cm
+            mountPath: /etc/ipxe-default-cm
+            readOnly: true
+          - name: ipxe-default-secret
+            mountPath: /etc/ipxe-default-secret
+            readOnly: true
           - name: ipxe-service-config
             mountPath: /etc/ipxe-service
           securityContext:
