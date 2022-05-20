@@ -81,6 +81,13 @@ spec:
         prometheus.io/scrape: "true"
     spec:
       volumes:
+      - name: ipxe-default-cm
+        configMap:
+          name: ipxe-default
+      - name: ipxe-default-secret
+        secret:
+          name: ipxe-default
+          optional: true
       - name: ipxe-service-config
         configMap:
           name: ipxe-service-config
@@ -93,11 +100,19 @@ spec:
           image: "jimmidyson/configmap-reload:v0.7.1"
           imagePullPolicy: "IfNotPresent"
           args:
+            - --volume-dir=/etc/ipxe-default-secret
+            - --volume-dir=/etc/ipxe-default-cm
             - --volume-dir=/etc/ipxe-service
             - --webhook-url=http://127.0.0.1:8082/-/reload
           resources:
             {}
           volumeMounts:
+          - name: ipxe-default-cm
+            mountPath: /etc/ipxe-default-cm
+            readOnly: true
+          - name: ipxe-default-secret
+            mountPath: /etc/ipxe-default-secret
+            readOnly: true
           - name: ipxe-service-config
             mountPath: /etc/ipxe-service
             readOnly: true

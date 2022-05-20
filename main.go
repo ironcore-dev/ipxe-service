@@ -192,25 +192,42 @@ func getToken() (string, error) {
 	return string(data), nil
 }
 
+func doesFileExist(fileName string) bool {
+	_, error := os.Stat(fileName)
+
+	// check if error is "file not exists"
+	if os.IsNotExist(error) {
+		return false
+	} else {
+		return true
+	}
+}
+
 func renderDefaultIgnition(mac string, w http.ResponseWriter, partKey string) {
 	var dataIn []byte
-	log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
-	secret := getSecret("default")
-	if len(secret.Data) > 0 {
-		if len(partKey) > 0 && len(secret.Data[partKey]) > 0 {
-			dataIn = secret.Data[partKey]
+	var err error
+	log.Printf("Render default Ignition from Secret , mac is %s", mac)
+	if doesFileExist("/etc/ipxe-default-secret/" + partKey) {
+		if len(partKey) > 0 {
+			dataIn, err = ioutil.ReadFile("/etc/ipxe-default-secret/" + partKey)
 		} else {
-			if len(secret.Data["ignition"]) > 0 {
-				dataIn = secret.Data["ignition"]
+			if doesFileExist("/etc/ipxe-default-secret/ignition") {
+				dataIn, err = ioutil.ReadFile("/etc/ipxe-default-secret/ignition")
 			}
 		}
+	} else {
+		log.Printf("Secret ipxe-default not contain %s", partKey)
 	}
 	if len(dataIn) == 0 {
-		cm := getConfigMap("default")
-		if len(partKey) > 0 {
-			dataIn = []byte(cm.Data[partKey])
-		} else {
-			dataIn = []byte(cm.Data["ignition"])
+		log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
+		if doesFileExist("/etc/ipxe-default-cm/" + partKey) {
+			if len(partKey) > 0 {
+				dataIn, err = ioutil.ReadFile("/etc/ipxe-default-cm/" + partKey)
+			} else {
+				if doesFileExist("/etc/ipxe-default-cm/ignition") {
+					dataIn, err = ioutil.ReadFile("/etc/ipxe-default-cm/ignition")
+				}
+			}
 		}
 	}
 	// render by butane to json
@@ -344,9 +361,17 @@ func (c *pasrseyaml) getIpxeConf() *pasrseyaml {
 }
 
 func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
-	configmap := getConfigMap("default")
-	log.Printf("Configmap %+v:", configmap)
-	fmt.Fprintf(w, string(configmap.Data["ipxe"]))
+	var ipxeData []byte
+	var err error
+	ipxeData, err = ioutil.ReadFile("/etc/ipxe-default-secret/ipxe")
+	if err != nil {
+		ipxeData, err = ioutil.ReadFile("/etc/ipxe-default-cm/ipxe")
+		if err != nil {
+			log.Printf("Problem with default secret and configmap   #%v ", err)
+			log.Fatal("This is critical!!!! default ipxe and ignition should works")
+		}
+	}
+	fmt.Fprintf(w, string(ipxeData))
 	return nil, nil
 }
 
