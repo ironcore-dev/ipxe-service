@@ -136,7 +136,7 @@ func getConf() dataconf {
 		log.Printf("Config is #%+v ", c)
 		return c
 	}
-	err = yaml.Unmarshal(yamlFile, c)
+	err = yaml.Unmarshal(yamlFile, &c)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
