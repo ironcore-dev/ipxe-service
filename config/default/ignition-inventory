@@ -145,7 +145,7 @@ systemd:
 
       [Service]
       Type=oneshot
-      ExecStart=/opt/inventory.sh -n onmetal -i ghcr.io/onmetal/inventory:latest -r
+      ExecStart=/opt/inventory.sh -n oob -i ghcr.io/onmetal/inventory:latest -r
       Restart=on-failure
       RestartSec=5
 
