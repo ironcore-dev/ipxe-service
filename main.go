@@ -528,9 +528,11 @@ func getMACbyIPAM(ip string) string {
 
 	var crds ipam.IPList
 
-	log.Printf("Search label: ip == %s, namespace = %s", ip, conf.IpamNS)
+	ipLabel := strings.ReplaceAll(ip, ":", "")
 
-	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{"ip": ip})
+	log.Printf("Search label: ip == %s, namespace = %s", ipLabel, conf.IpamNS)
+
+	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{"ip": ipLabel})
 	if err != nil {
 		log.Printf("Failed to list crds ipam in namespace default: %+v", err)
 		return ""
