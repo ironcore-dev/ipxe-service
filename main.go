@@ -528,7 +528,7 @@ func getMACbyIPAM(ip string) string {
 
 	var crds ipam.IPList
 
-	ipLabel := strings.ReplaceAll(ip, ":", "")
+	ipLabel := strings.ReplaceAll(ip, ":", "_")
 
 	log.Printf("Search label: ip == %s, namespace = %s", ipLabel, conf.IpamNS)
 
