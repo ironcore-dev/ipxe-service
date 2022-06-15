@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -518,6 +519,18 @@ func getUUIDbyInventory(mac string) string {
 	return clientUUID
 }
 
+func IpVersion(s string) string {
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '.':
+			return "ipv4"
+		case ':':
+			return "ipv6"
+		}
+	}
+	return ""
+}
+
 func getMACbyIPAM(ip string) string {
 	if err := ipam.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types ipam to client scheme:", err)
@@ -554,6 +567,19 @@ func getMACbyIPAM(ip string) string {
 	return clientMACAddr
 }
 
+func FullIPv6(ip net.IP) string {
+	dst := make([]byte, hex.EncodedLen(len(ip)))
+	_ = hex.Encode(dst, ip)
+	return string(dst[0:4]) + ":" +
+		string(dst[4:8]) + ":" +
+		string(dst[8:12]) + ":" +
+		string(dst[12:16]) + ":" +
+		string(dst[16:20]) + ":" +
+		string(dst[20:24]) + ":" +
+		string(dst[24:28]) + ":" +
+		string(dst[28:])
+}
+
 func getIP(r *http.Request) string {
 	forwarded := r.Header.Get("X-FORWARDED-FOR")
 	if forwarded != "" {
@@ -561,6 +587,10 @@ func getIP(r *http.Request) string {
 	}
 
 	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
+	if IpVersion(clientIP) == "ipv6" {
+		netip := net.ParseIP(clientIP)
+		clientIP = FullIPv6(netip)
+	}
 
 	return clientIP
 }
