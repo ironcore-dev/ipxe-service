@@ -589,7 +589,7 @@ func getIP(r *http.Request) string {
 	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 	if IpVersion(clientIP) == "ipv6" {
 		netip := net.ParseIP(clientIP)
-		clientIP = FullIPv6(netip)
+		return FullIPv6(netip)
 	}
 
 	return clientIP
