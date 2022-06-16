@@ -332,7 +332,7 @@ func postEvent(ip string, mac string, uuid string) {
 
 func getMac(r *http.Request) string {
 	ip := getIP(r)
-	log.Printf("Clien's IP from request: %s", ip)
+	log.Printf("Client's IP from request: %s", ip)
 	mac := getMACbyIPAM(ip)
 	log.Printf("Client's MAC Address from IPAM: %s", mac)
 	if mac == "" {
@@ -581,12 +581,11 @@ func FullIPv6(ip net.IP) string {
 }
 
 func getIP(r *http.Request) string {
-	forwarded := r.Header.Get("X-FORWARDED-FOR")
-	if forwarded != "" {
-		return forwarded
+	clientIP := r.Header.Get("X-FORWARDED-FOR")
+	if clientIP == "" {
+		clientIP, _, _ = net.SplitHostPort(r.RemoteAddr)
 	}
 
-	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 	if IpVersion(clientIP) == "ipv6" {
 		netip := net.ParseIP(clientIP)
 		return FullIPv6(netip)
