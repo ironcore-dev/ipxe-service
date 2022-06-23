@@ -320,13 +320,19 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 					userData = cm.Data["ignition"]
 				}
 			}
-			log.Printf("UserData: %+v", userData)
-			userDataByte := []byte(userData)
-			userDataJson := renderButane(userDataByte)
-			log.Printf("UserDataJson: %s", userDataJson)
-			// return json
-			fmt.Fprint(w, userDataJson)
-			return
+			if len(userData) == 0 {
+				log.Print("UserData is empty in specific configmap and secret, going to default")
+				renderDefaultIgnition(mac, w, partKey)
+				return
+			} else {
+				log.Printf("UserData: %+v", userData)
+				userDataByte := []byte(userData)
+				userDataJson := renderButane(userDataByte)
+				log.Printf("UserDataJson: %s", userDataJson)
+				// return json
+				fmt.Fprint(w, userDataJson)
+				return
+			}
 		}
 	}
 }
