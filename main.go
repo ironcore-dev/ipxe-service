@@ -256,6 +256,10 @@ func renderButane(dataIn []byte) string {
 }
 
 func getIgnition(w http.ResponseWriter, r *http.Request) {
+	// debug data
+	log.Printf("\nRequested uri: %+v\n", r.URL.Path)
+	log.Printf("\nHeaders: %+v\n", r.Header)
+
 	var mac string
 	var partKey string
 	var userData string
