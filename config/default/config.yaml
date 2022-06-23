@@ -1,6 +1,6 @@
-configmap-namespace: oob-controller-system
-ipam-namespace: oob-controller-system
-machine-request-namespace: oob-controller-system
-inventory-namespace: oob-controller-system
-k8simage-namespace: oob-controller-system
+configmap-namespace: oob
+ipam-namespace: oob
+machine-request-namespace: oob
+inventory-namespace: oob
+k8simage-namespace: oob
 
