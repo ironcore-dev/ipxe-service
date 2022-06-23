@@ -317,9 +317,11 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			log.Printf("UserData: %+v", userData)
-			resData := renderButane([]byte(userData))
+			userDataByte := []byte(userData)
+			userDataJson := renderButane(userDataByte)
+			log.Printf("UserDataJson: %s", userDataJson)
 			// return json
-			fmt.Fprint(w, resData)
+			fmt.Fprint(w, userDataJson)
 			return
 		}
 	}
