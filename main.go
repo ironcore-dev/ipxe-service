@@ -231,6 +231,15 @@ func renderDefaultIgnition(mac string, w http.ResponseWriter, partKey string) {
 			}
 		}
 	}
+	if err != nil {
+		log.Printf("Error in ignition rendering before butane: %+v", err)
+	}
+	resData := renderButane(dataIn)
+	// return json
+	fmt.Fprint(w, resData)
+}
+
+func renderButane(dataIn []byte) string {
 	// render by butane to json
 	options := common.TranslateBytesOptions{
 		Raw:    true,
@@ -243,8 +252,7 @@ func renderDefaultIgnition(mac string, w http.ResponseWriter, partKey string) {
 		log.Printf("\nError in ignition rendering.dataIn is : %+v\n", dataIn)
 		log.Printf("Error in ignition rendering: %+v", err)
 	}
-	// return json
-	fmt.Fprint(w, string(dataOut))
+	return string(dataOut)
 }
 
 func getIgnition(w http.ResponseWriter, r *http.Request) {
@@ -309,7 +317,9 @@ func getIgnition(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			log.Printf("UserData: %+v", userData)
-			fmt.Fprintf(w, userData)
+			resData := renderButane([]byte(userData))
+			// return json
+			fmt.Fprint(w, resData)
 			return
 		}
 	}
