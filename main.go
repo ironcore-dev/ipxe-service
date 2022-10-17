@@ -545,9 +545,26 @@ func getMacIgnition(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			log.Printf("Error in ignition rendering before butane: %s", err)
-			http.Error(w, "Error in ignition rendering", http.StatusNoContent)
+			http.Error(w, "Error in ignition reading", http.StatusNoContent)
+			return
 		}
-		resData := renderButane(dataIn)
+
+		type Config struct {
+			Mac string
+		}
+		cfg := Config{Mac: mac}
+		tmpl, err := template.New("ignition").Parse(string(dataIn))
+		if err != nil {
+			http.Error(w, "Error in ignition template creation", http.StatusNoContent)
+			return
+		}
+		var ignition bytes.Buffer
+		err = tmpl.Execute(&ignition, cfg)
+		if err != nil {
+			http.Error(w, "Error in ignition template rendering", http.StatusNoContent)
+			return
+		}
+		resData := renderButane(ignition.Bytes())
 
 		_, err = w.Write([]byte(resData))
 		if err != nil {
