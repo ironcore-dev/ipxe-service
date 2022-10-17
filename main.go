@@ -11,11 +11,14 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
+	"github.com/gorilla/mux"
 	"gopkg.in/yaml.v1"
 
 	ipam "github.com/onmetal/ipam/api/v1alpha1"
@@ -74,7 +77,12 @@ func main() {
 
 	fmt.Println("iPXE is running ...")
 
-	http.HandleFunc("/", ok200)
+	rtr := mux.NewRouter()
+	rtr.HandleFunc("/mac/{mac:[a-z0-9:]+}/boot-mac.ipxe", getMacChain).Methods("GET")
+	rtr.HandleFunc("/mac/{mac:[a-z0-9:]+}/ignition/{part:[a-z0-9]+}", getMacIgnition).Methods("GET")
+	rtr.HandleFunc("/", ok200).Methods("GET")
+
+	http.Handle("/", rtr)
 	http.HandleFunc("/ipxe", getChain)
 	http.HandleFunc("/ignition/", getIgnition)
 	http.HandleFunc("/ignition", getIgnition)
@@ -398,6 +406,35 @@ func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
 	return nil, nil
 }
 
+func renderIpxeMacConfFile(mac string) ([]byte, error) {
+	var ipxeData []byte
+	var err error
+	ipxeData, err = ioutil.ReadFile("/etc/ipxe-default-secret/boot-mac.ipxe")
+	if err != nil {
+		ipxeData, err = ioutil.ReadFile("/etc/ipxe-default-cm/boot-mac.ipxe")
+		if err != nil {
+			log.Printf("Problem with default secret and configmap #%v ", err)
+			return nil, err
+		}
+	}
+
+	type Config struct {
+		Mac string
+	}
+	cfg := Config{Mac: mac}
+	tmpl, err := template.New("boot-mac.ipxe").Parse(string(ipxeData))
+	if err != nil {
+		return nil, err
+	}
+	var ipxe bytes.Buffer
+	err = tmpl.Execute(&ipxe, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return ipxe.Bytes(), nil
+}
+
 func getCert(w http.ResponseWriter, r *http.Request) {
 	ns := conf.ConfigmapNS
 	cl := createClient()
@@ -417,6 +454,108 @@ func getCert(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Configmap %+v:", configmap)
 	fmt.Fprintf(w, configmap.Data["ca.crt"])
+}
+
+func getMacChain(w http.ResponseWriter, r *http.Request) {
+	var mac string
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		requestIPXEDuration.WithLabelValues(mac).Observe(v)
+	}))
+	defer func() {
+		timer.ObserveDuration()
+	}()
+
+	params := mux.Vars(r)
+	mac = params["mac"]
+
+	if mac != "" {
+		ip := getLocalLinkIpFromIPAM(mac)
+		if ip != "" {
+			log.Printf("Response the iPXE config file for mac %s...", mac)
+			body, err := renderIpxeMacConfFile(mac)
+			if err != nil {
+				http.Error(w, "failed to render iPXE config for mac", http.StatusNoContent)
+				return
+			}
+			_, err = w.Write(body)
+			if err != nil {
+				http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
+				return
+			}
+		} else {
+			log.Printf("SECURITY Error Alert! Request %#v", r)
+			log.Printf("Not found MAC Address in IPAM for local-link: %s", ip)
+			http.Error(w, "Mac not found", http.StatusNoContent)
+		}
+	}
+}
+
+func getMacIgnition(w http.ResponseWriter, r *http.Request) {
+	var mac string
+	var part string
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		requestIGNITIONDuration.WithLabelValues(mac).Observe(v)
+	}))
+
+	defer func() {
+		timer.ObserveDuration()
+	}()
+
+	params := mux.Vars(r)
+	mac = params["mac"]
+	part = params["part"]
+	if part == "" {
+		http.Error(w, "no ignition part specified", http.StatusNoContent)
+		return
+	}
+	partKey := fmt.Sprintf("ignition-%s", part)
+	if mac != "" {
+		ip := getLocalLinkIpFromIPAM(mac)
+		if ip != "" {
+			log.Printf("Response the iPXE config file for mac %s...", mac)
+			body, err := renderIpxeMacConfFile(mac)
+			if err != nil {
+				http.Error(w, "failed to render iPXE config for mac", http.StatusNoContent)
+				return
+			}
+			_, err = w.Write(body)
+			if err != nil {
+				http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
+				return
+			}
+		} else {
+			log.Printf("SECURITY Error Alert! Request %#v", r)
+			log.Printf("Not found MAC Address in IPAM for local-link: %s", ip)
+			http.Error(w, "Mac not found", http.StatusNoContent)
+		}
+
+		var dataIn []byte
+		var err error
+		log.Printf("Render default Ignition from Secret , mac is %s", mac)
+		file := filepath.Join("/etc/ipxe-default-secret", partKey)
+		if doesFileExist(file) {
+			dataIn, err = ioutil.ReadFile(file)
+		}
+		if len(dataIn) == 0 {
+			log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
+			file := filepath.Join("/etc/ipxe-default-cm", partKey)
+			if doesFileExist(file) {
+				dataIn, err = ioutil.ReadFile(file)
+			}
+		}
+		if err != nil {
+			log.Printf("Error in ignition rendering before butane: %s", err)
+			http.Error(w, "Error in ignition rendering", http.StatusNoContent)
+		}
+		resData := renderButane(dataIn)
+
+		_, err = w.Write([]byte(resData))
+		if err != nil {
+			log.Printf("Failed to write ignition for mac: %s err: %s", mac, err)
+			http.Error(w, "Failed to write ignition for mac", http.StatusNoContent)
+			return
+		}
+	}
 }
 
 func getChain(w http.ResponseWriter, r *http.Request) {
@@ -587,6 +726,38 @@ func getMACbyIPAM(ip string) string {
 		}
 	}
 	return clientMACAddr
+}
+
+func getLocalLinkIpFromIPAM(mac string) string {
+	if err := ipam.AddToScheme(scheme.Scheme); err != nil {
+		log.Fatal("Unable to add registered types ipam to client scheme:", err)
+		os.Exit(18)
+	}
+
+	cl := createClient()
+
+	var crds ipam.IPList
+
+	macLabel := strings.ReplaceAll(mac, ":", "")
+
+	log.Printf("Search label: mac == %s, namespace = %s", macLabel, conf.IpamNS)
+
+	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{"mac": macLabel})
+	if err != nil {
+		log.Printf("Failed to list crds ipam in namespace default: %+v", err)
+		return ""
+	}
+
+	var localLinkIp string
+	if len(crds.Items) > 0 {
+		for k, _ := range crds.Items[0].ObjectMeta.Labels {
+			if strings.Contains(k, "ip") {
+				localLinkIp = crds.Items[0].ObjectMeta.Labels["ip"]
+				break
+			}
+		}
+	}
+	return localLinkIp
 }
 
 func FullIPv6(ip net.IP) string {
