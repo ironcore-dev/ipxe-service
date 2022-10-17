@@ -512,64 +512,53 @@ func getMacIgnition(w http.ResponseWriter, r *http.Request) {
 	if mac != "" {
 		ip := getLocalLinkIpFromIPAM(mac)
 		if ip != "" {
-			log.Printf("Response the iPXE config file for mac %s...", mac)
-			body, err := renderIpxeMacConfFile(mac)
+			var dataIn []byte
+			var err error
+			log.Printf("Render default Ignition from Secret , mac is %s", mac)
+			file := filepath.Join("/etc/ipxe-default-secret", partKey)
+			if doesFileExist(file) {
+				dataIn, err = ioutil.ReadFile(file)
+			}
+			if len(dataIn) == 0 {
+				log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
+				file := filepath.Join("/etc/ipxe-default-cm", partKey)
+				if doesFileExist(file) {
+					dataIn, err = ioutil.ReadFile(file)
+				}
+			}
 			if err != nil {
-				http.Error(w, "failed to render iPXE config for mac", http.StatusNoContent)
+				log.Printf("Error in ignition rendering before butane: %s", err)
+				http.Error(w, "Error in ignition reading", http.StatusNoContent)
 				return
 			}
-			_, err = w.Write(body)
+
+			type Config struct {
+				Mac string
+			}
+			cfg := Config{Mac: mac}
+			tmpl, err := template.New("ignition").Parse(string(dataIn))
 			if err != nil {
-				http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
+				http.Error(w, "Error in ignition template creation", http.StatusNoContent)
+				return
+			}
+			var ignition bytes.Buffer
+			err = tmpl.Execute(&ignition, cfg)
+			if err != nil {
+				http.Error(w, "Error in ignition template rendering", http.StatusNoContent)
+				return
+			}
+			resData := renderButane(ignition.Bytes())
+
+			_, err = w.Write([]byte(resData))
+			if err != nil {
+				log.Printf("Failed to write ignition for mac: %s err: %s", mac, err)
+				http.Error(w, "Failed to write ignition for mac", http.StatusNoContent)
 				return
 			}
 		} else {
 			log.Printf("SECURITY Error Alert! Request %#v", r)
 			log.Printf("Not found MAC Address in IPAM for local-link: %s", ip)
 			http.Error(w, "Mac not found", http.StatusNoContent)
-		}
-
-		var dataIn []byte
-		var err error
-		log.Printf("Render default Ignition from Secret , mac is %s", mac)
-		file := filepath.Join("/etc/ipxe-default-secret", partKey)
-		if doesFileExist(file) {
-			dataIn, err = ioutil.ReadFile(file)
-		}
-		if len(dataIn) == 0 {
-			log.Printf("Render default Ignition from ConfigMap, mac is %s", mac)
-			file := filepath.Join("/etc/ipxe-default-cm", partKey)
-			if doesFileExist(file) {
-				dataIn, err = ioutil.ReadFile(file)
-			}
-		}
-		if err != nil {
-			log.Printf("Error in ignition rendering before butane: %s", err)
-			http.Error(w, "Error in ignition reading", http.StatusNoContent)
-			return
-		}
-
-		type Config struct {
-			Mac string
-		}
-		cfg := Config{Mac: mac}
-		tmpl, err := template.New("ignition").Parse(string(dataIn))
-		if err != nil {
-			http.Error(w, "Error in ignition template creation", http.StatusNoContent)
-			return
-		}
-		var ignition bytes.Buffer
-		err = tmpl.Execute(&ignition, cfg)
-		if err != nil {
-			http.Error(w, "Error in ignition template rendering", http.StatusNoContent)
-			return
-		}
-		resData := renderButane(ignition.Bytes())
-
-		_, err = w.Write([]byte(resData))
-		if err != nil {
-			log.Printf("Failed to write ignition for mac: %s err: %s", mac, err)
-			http.Error(w, "Failed to write ignition for mac", http.StatusNoContent)
 			return
 		}
 	}
