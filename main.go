@@ -16,6 +16,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Masterminds/sprig"
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
 	"github.com/gorilla/mux"
@@ -26,6 +27,7 @@ import (
 	inv "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -422,7 +424,7 @@ func renderIpxeMacConfFile(mac string) ([]byte, error) {
 		Mac string
 	}
 	cfg := Config{Mac: mac}
-	tmpl, err := template.New("boot-mac.ipxe").Parse(string(ipxeData))
+	tmpl, err := template.New("boot-mac.ipxe").Funcs(sprig.HermeticTxtFuncMap()).Parse(string(ipxeData))
 	if err != nil {
 		return nil, err
 	}
@@ -469,7 +471,7 @@ func getMacChain(w http.ResponseWriter, r *http.Request) {
 	mac = params["mac"]
 
 	if mac != "" {
-		ip := getLocalLinkIpFromIPAM(mac)
+		ip, _ := getLocalLinkIpFromIPAM(mac)
 		if ip != "" {
 			log.Printf("Response the iPXE config file for mac %s...", mac)
 			body, err := renderIpxeMacConfFile(mac)
@@ -510,8 +512,8 @@ func getMacIgnition(w http.ResponseWriter, r *http.Request) {
 	}
 	partKey := fmt.Sprintf("ignition-%s", part)
 	if mac != "" {
-		ip := getLocalLinkIpFromIPAM(mac)
-		if ip != "" {
+		ip, uuid := getLocalLinkIpFromIPAM(mac)
+		if ip != "" && uuid != "" {
 			var dataIn []byte
 			var err error
 			log.Printf("Render default Ignition from Secret , mac is %s", mac)
@@ -532,11 +534,34 @@ func getMacIgnition(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			type Config struct {
-				Mac string
+			ctx := context.Background()
+			cl := createClient()
+			kubeconfigSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      fmt.Sprintf("kubeconfig-inventory-%s", uuid),
+					Namespace: conf.InventoryNS,
+				},
 			}
-			cfg := Config{Mac: mac}
-			tmpl, err := template.New("ignition").Parse(string(dataIn))
+			err = cl.Get(ctx, client.ObjectKeyFromObject(kubeconfigSecret), kubeconfigSecret)
+			if err != nil {
+				log.Printf("Error getting kubeconfig for inventory: %s", err)
+				http.Error(w, "Error in ignition reading", http.StatusNoContent)
+				return
+			}
+
+			kubeconfig, exists := kubeconfigSecret.Data["kubeconfig"]
+			if !exists {
+				log.Printf("Error getting kubeconfig data for inventory: %s", err)
+				http.Error(w, "Error in ignition reading", http.StatusNoContent)
+				return
+			}
+
+			type Config struct {
+				Mac        string
+				Kubeconfig string
+			}
+			cfg := Config{Mac: mac, Kubeconfig: string(kubeconfig)}
+			tmpl, err := template.New("ignition").Funcs(sprig.HermeticTxtFuncMap()).Parse(string(dataIn))
 			if err != nil {
 				http.Error(w, "Error in ignition template creation", http.StatusNoContent)
 				return
@@ -734,10 +759,9 @@ func getMACbyIPAM(ip string) string {
 	return clientMACAddr
 }
 
-func getLocalLinkIpFromIPAM(mac string) string {
+func getLocalLinkIpFromIPAM(mac string) (string, string) {
 	if err := ipam.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types ipam to client scheme:", err)
-		os.Exit(18)
 	}
 
 	cl := createClient()
@@ -751,19 +775,25 @@ func getLocalLinkIpFromIPAM(mac string) string {
 	err := cl.List(context.Background(), &crds, client.InNamespace(conf.IpamNS), client.MatchingLabels{"mac": macLabel})
 	if err != nil {
 		log.Printf("Failed to list crds ipam in namespace default: %+v", err)
-		return ""
+		return "", ""
 	}
 
 	var localLinkIp string
+	var machineUUID string
 	if len(crds.Items) > 0 {
 		for k, _ := range crds.Items[0].ObjectMeta.Labels {
 			if strings.Contains(k, "ip") {
 				localLinkIp = crds.Items[0].ObjectMeta.Labels["ip"]
+				if len(crds.Items[0].ObjectMeta.OwnerReferences) > 0 {
+					if strings.HasPrefix(crds.Items[0].ObjectMeta.OwnerReferences[0].Name, "m-") {
+						machineUUID = strings.ReplaceAll(crds.Items[0].ObjectMeta.OwnerReferences[0].Name, "m-", "")
+					}
+				}
 				break
 			}
 		}
 	}
-	return localLinkIp
+	return localLinkIp, machineUUID
 }
 
 func FullIPv6(ip net.IP) string {
