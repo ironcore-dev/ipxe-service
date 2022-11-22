@@ -1,6 +1,13 @@
 GOPRIVATE ?= "github.com/onmetal/*"
 IMG ?= ipxe-service:latest
 
+GITHUB_PAT_PATH ?=
+ifeq (,$(GITHUB_PAT_PATH))
+GITHUB_PAT_MOUNT ?=
+else
+GITHUB_PAT_MOUNT ?= --secret id=github_pat,src=$(GITHUB_PAT_PATH)
+endif
+
 all: build
 
 build:
@@ -18,6 +25,12 @@ test:
 
 image: test
 	podman build . -t ${IMG} --build-arg GOPRIVATE=${GOPRIVATE} --build-arg GIT_USER=${GIT_USER} --build-arg GIT_PASSWORD=${GIT_PASSWORD}
+
+docker-build: ## Build docker image with the manager.
+	docker build -t ${IMG} --build-arg GOPRIVATE=${GOPRIVATE} $(GITHUB_PAT_MOUNT) .
+
+docker-push: ## Push docker image with the manager.
+	docker push ${IMG}
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize

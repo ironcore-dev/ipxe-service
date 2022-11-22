@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net"
@@ -81,9 +82,9 @@ func main() {
 	fmt.Println("iPXE is running ...")
 
 	rtr := mux.NewRouter()
-	rtr.HandleFunc("/mac/{mac:[a-z0-9:]+}/{part:[a-z0-9-]+}", getChainByMac).Methods("GET")
-	rtr.HandleFunc("/mac/{mac:[a-z0-9:]+}/ignition/{part:[a-z0-9]+}", getIgnitionByMac).Methods("GET")
-	rtr.HandleFunc("/machine/{uuid:[a-z0-9-]+}/ignition/{part:[a-z0-9-]+}", getIgnitionByUUID).Methods("GET")
+	rtr.HandleFunc("/ipxe/{uuid:[a-z0-9-]+}/{part:[a-z0-9-]+}", getChainByUUID).Methods("GET")
+	//rtr.HandleFunc("/mac/{mac:[a-z0-9:]+}/ignition/{part:[a-z0-9]+}", getIgnitionByMac).Methods("GET")
+	rtr.HandleFunc("/ignition/{uuid:[a-z0-9-]+}/ignition/{part:[a-z0-9-]+}", getIgnitionByUUID).Methods("GET")
 	rtr.HandleFunc("/", ok200).Methods("GET")
 
 	http.Handle("/", rtr)
@@ -410,7 +411,7 @@ func renderIpxeDefaultConfFile(w http.ResponseWriter) ([]byte, error) {
 	return nil, nil
 }
 
-func renderIpxeMacConfFile(mac, part string) ([]byte, error) {
+func renderIpxeUUIDConfFile(mac, part string) ([]byte, error) {
 	var ipxeData []byte
 	var err error
 	ipxeData, err = ioutil.ReadFile(path.Join("/etc/ipxe-default-secret", part))
@@ -460,48 +461,46 @@ func getCert(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, configmap.Data["ca.crt"])
 }
 
-func getChainByMac(w http.ResponseWriter, r *http.Request) {
-	var mac string
+func getChainByUUID(w http.ResponseWriter, r *http.Request) {
+	var uuid string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		requestIPXEDuration.WithLabelValues(mac).Observe(v)
+		requestIPXEDuration.WithLabelValues(uuid).Observe(v)
 	}))
 	defer func() {
 		timer.ObserveDuration()
 	}()
 
 	params := mux.Vars(r)
-	mac = params["mac"]
+	uuid = params["uuid"]
 	part := params["part"]
-	if mac != "" {
-		uuid := getUUIDbyInventory(mac)
-		if uuid == "" {
-			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
+	if uuid != "" {
+		ip := getIP(r)
+		uuidFromInventory, err := getUUIDByInventoryIP(ip)
+		if err != nil {
+			log.Printf("Error: %s\n", err)
+			http.Error(w, "Internal Error", http.StatusNoContent)
+			return
+		}
+
+		if uuidFromInventory == "" {
+			log.Printf("Not found client's IP (%s) in Inventory %s\n", ip, uuid)
 			log.Println("Response the default IPXE config file ...")
 
-			ip, _ := getLinkLocalIpFromIPAM(mac)
-			if ip != "" {
-				log.Printf("Response the iPXE config file for mac %s...", mac)
-				body, err := renderIpxeMacConfFile(mac, part)
-				if err != nil {
-					http.Error(w, "failed to render iPXE config for mac", http.StatusNoContent)
-					return
-				}
-				_, err = w.Write(body)
-				if err != nil {
-					http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
-					return
-				}
-			} else {
-				log.Printf("SECURITY Error Alert! Request %#v", r)
-				log.Printf("Not found MAC Address in IPAM for local-link: %s", ip)
-				http.Error(w, "Mac not found", http.StatusNoContent)
+			body, err := renderIpxeUUIDConfFile(uuid, part)
+			if err != nil {
+				http.Error(w, "failed to render iPXE config for mac", http.StatusNoContent)
+				return
 			}
-
+			_, err = w.Write(body)
+			if err != nil {
+				http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
+				return
+			}
 		} else {
 			e := &event{
 				UUID:    uuid,
 				Reason:  "IPXE",
-				Message: fmt.Sprintf("IPXE request for MAC %s", mac),
+				Message: fmt.Sprintf("IPXE request for MAC %s", uuid),
 			}
 			h := newHttp()
 			requestBody, _ := json.Marshal(e)
@@ -805,6 +804,37 @@ func getUUIDbyInventory(mac string) string {
 	log.Printf("Found inventories for MAC: %+v", clientUUID)
 
 	return clientUUID
+}
+
+func getUUIDByInventoryIP(ip string) (string, error) {
+	if err := inv.AddToScheme(scheme.Scheme); err != nil {
+		err = errors.Wrap(err, "Unable to add registered types inventory to client scheme")
+		return "", err
+	}
+
+	cl := createClient()
+
+	ipLabel := "machine.onmetal.de/ip-address-" + strings.ReplaceAll(ip, ":", "")
+	var inventory inv.InventoryList
+	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{ipLabel: ""})
+	if err != nil {
+		err = errors.Wrapf(err, "Failed to list crds inventories in namespace %s", conf.InventoryNS)
+		return "", err
+	}
+
+	var uuid string
+	if len(inventory.Items) > 0 {
+		err = errors.Wrapf(err, "Found more then one inventory for IP: %s", ip)
+		return "", err
+	} else if len(inventory.Items) == 0 {
+		log.Printf("No inventory found for IP: %s, assume it needs to be created\n", ip)
+		return "", nil
+	} else if len(inventory.Items) == 1 {
+		uuid = inventory.Items[0].Spec.System.ID
+	}
+	log.Printf("Found inventory uuid %s for IP: %s\n", uuid, ip)
+
+	return uuid, nil
 }
 
 func IpVersion(s string) string {
