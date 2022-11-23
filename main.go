@@ -58,7 +58,7 @@ var (
 	conf                = getConf()
 	requestIPXEDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "ipxe_request_duration_seconds",
-		Help:    "Histogram for the runtime of a simple ipxe(getChain) function.",
+		Help:    "Histogram for the runtime of a simple ipxe(getChainDefault) function.",
 		Buckets: prometheus.LinearBuckets(0.01, 0.05, 10),
 	},
 		[]string{"mac"},
@@ -88,7 +88,7 @@ func main() {
 	rtr.HandleFunc("/", ok200).Methods("GET")
 
 	http.Handle("/", rtr)
-	http.HandleFunc("/ipxe", getChain)
+	http.HandleFunc("/ipxe", getChainDefault)
 	http.HandleFunc("/ignition/", getIgnition)
 	http.HandleFunc("/ignition", getIgnition)
 	http.HandleFunc("/-/reload", reloadApp)
@@ -483,19 +483,22 @@ func getChainByUUID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if uuidFromInventory == "" {
-			log.Printf("Not found client's IP (%s) in Inventory %s\n", ip, uuid)
-			log.Println("Response the default IPXE config file ...")
-
+			log.Printf("Response the %s IPXE config file for %s (%s)", part, ip, uuid)
 			body, err := renderIpxeUUIDConfFile(uuid, part)
 			if err != nil {
-				http.Error(w, "failed to render iPXE config for mac", http.StatusNoContent)
+				http.Error(w, "failed to render iPXE config for uuid", http.StatusNoContent)
 				return
 			}
 			_, err = w.Write(body)
 			if err != nil {
-				http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
+				http.Error(w, "failed to write iPXE config for uuid", http.StatusNoContent)
 				return
 			}
+		} else if uuid != uuidFromInventory {
+			log.Printf("SECURITY Error Alert! Request %#v", r)
+			log.Printf("Provided UUID (%s) does not match with IP (%s) from inventory (%s)", uuid, ip, uuidFromInventory)
+			http.Error(w, "Internal Error", http.StatusNoContent)
+			return
 		} else {
 			e := &event{
 				UUID:    uuid,
@@ -684,54 +687,17 @@ func getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getChain(w http.ResponseWriter, r *http.Request) {
-	var mac string
+func getChainDefault(w http.ResponseWriter, r *http.Request) {
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		requestIPXEDuration.WithLabelValues(mac).Observe(v)
+		requestIPXEDuration.WithLabelValues("default").Observe(v)
 	}))
 	defer func() {
 		timer.ObserveDuration()
 	}()
 
-	mac = getMac(r)
-	ip := getIP(r)
-
-	if mac == "" {
-		log.Println("Response the default IPXE config file ...")
-		renderIpxeDefaultConfFile(w)
-	} else {
-		uuid := getUUIDbyInventory(mac)
-		if uuid == "" {
-			log.Printf("Not found client's MAC Address (%s) in Inventory: ", mac)
-			log.Println("Response the default IPXE config file ...")
-
-			renderIpxeDefaultConfFile(w)
-
-		} else {
-			e := &event{
-				UUID:    uuid,
-				Reason:  "IPXE",
-				Message: fmt.Sprintf("IPXE request for IP %s and  MAC %s ", ip, mac),
-			}
-			h := newHttp()
-			requestBody, _ := json.Marshal(e)
-			resp, err := h.postRequest(requestBody)
-			if err != nil {
-				h.log.Info("Can't send a request", err)
-				log.Println(string(resp))
-			}
-			log.Printf("Generate IPXE config for the client ...\n")
-
-			instance := getConfigMap(uuid)
-			if len(instance.Data) == 0 {
-				log.Printf("Not found configmap with UUID  %s", uuid)
-				renderIpxeDefaultConfFile(w)
-				return
-			}
-			userData := instance.Data["ipxe"]
-			fmt.Fprintf(w, userData)
-		}
-	}
+	log.Println("Response the default IPXE config file ...")
+	//TODO error handling
+	renderIpxeDefaultConfFile(w)
 }
 
 func createClient() client.Client {
