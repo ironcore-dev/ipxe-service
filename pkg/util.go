@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"path"
 	"text/template"
@@ -38,20 +37,6 @@ func FullIPv6(ip net.IP) string {
 		string(dst[20:24]) + ":" +
 		string(dst[24:28]) + ":" +
 		string(dst[28:])
-}
-
-func getIP(r *http.Request) string {
-	clientIP := r.Header.Get("X-FORWARDED-FOR")
-	if clientIP == "" {
-		clientIP, _, _ = net.SplitHostPort(r.RemoteAddr)
-	}
-
-	if IpVersion(clientIP) == "ipv6" {
-		netip := net.ParseIP(clientIP)
-		return FullIPv6(netip)
-	}
-
-	return clientIP
 }
 
 func doesFileExist(fileName string) bool {

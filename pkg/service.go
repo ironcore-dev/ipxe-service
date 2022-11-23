@@ -8,6 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -30,7 +31,7 @@ func (i IPXE) Start() {
 	rtr.HandleFunc("/", ok200).Methods("GET")
 
 	http.Handle("/", rtr)
-	http.HandleFunc("/-/reload", reloadApp)
+	http.HandleFunc("/-/reload", i.reloadApp)
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/cert", i.getCert)
 	if err := http.ListenAndServe(":8082", nil); err != nil {
@@ -84,7 +85,7 @@ func (i IPXE) getChainByUUID(w http.ResponseWriter, r *http.Request) {
 	uuid = params["uuid"]
 	part := params["part"]
 	if uuid != "" {
-		ip := getIP(r)
+		ip := i.getIP(r)
 		ips, err := i.K8sClient.getIPsFromInventory(uuid, i.Config.InventoryNS)
 		if err != nil {
 			log.Printf("Error: %s\n", err)
@@ -185,7 +186,7 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ip := getIP(r)
+	ip := i.getIP(r)
 	ips, err := i.K8sClient.getIPsFromInventory(uuid, i.Config.InventoryNS)
 	if err != nil {
 		log.Printf("Error: %s\n", err)
@@ -309,8 +310,28 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func reloadApp(w http.ResponseWriter, r *http.Request) {
-	ip := getIP(r)
+func (i IPXE) getIP(r *http.Request) string {
+	var clientIP string
+
+	if i.Config.DisableForwardHeader {
+		clientIP, _, _ = net.SplitHostPort(r.RemoteAddr)
+	} else {
+		clientIP = r.Header.Get("X-FORWARDED-FOR")
+		if clientIP == "" {
+			clientIP, _, _ = net.SplitHostPort(r.RemoteAddr)
+		}
+	}
+
+	if IpVersion(clientIP) == "ipv6" {
+		netip := net.ParseIP(clientIP)
+		return FullIPv6(netip)
+	}
+
+	return clientIP
+}
+
+func (i IPXE) reloadApp(w http.ResponseWriter, r *http.Request) {
+	ip := i.getIP(r)
 	if ip == "127.0.0.1" {
 		log.Print("Reload server because changed configmap")
 		_, _ = w.Write([]byte("reloaded"))

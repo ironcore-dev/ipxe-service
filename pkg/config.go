@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	ConfigmapNS      string `yaml:"configmap-namespace"`
-	IpamNS           string `yaml:"ipam-namespace"`
-	MachineRequestNS string `yaml:"machine-request-namespace"`
-	InventoryNS      string `yaml:"inventory-namespace"`
-	ImageNS          string `yaml:"k8simage-namespace"`
+	ConfigmapNS          string `yaml:"configmap-namespace"`
+	IpamNS               string `yaml:"ipam-namespace"`
+	MachineRequestNS     string `yaml:"machine-request-namespace"`
+	InventoryNS          string `yaml:"inventory-namespace"`
+	ImageNS              string `yaml:"k8simage-namespace"`
+	DisableForwardHeader bool   `yaml:"disable-forward-header,omitempty"`
 }
 
 func GetConf() Config {
