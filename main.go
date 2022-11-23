@@ -475,14 +475,15 @@ func getChainByUUID(w http.ResponseWriter, r *http.Request) {
 	part := params["part"]
 	if uuid != "" {
 		ip := getIP(r)
-		uuidFromInventory, err := getUUIDByInventoryIP(ip)
+		ips, err := getIPsFromInventory(uuid)
 		if err != nil {
 			log.Printf("Error: %s\n", err)
 			http.Error(w, "Internal Error", http.StatusNoContent)
 			return
 		}
 
-		if uuidFromInventory == "" {
+		// no IPs are set for this inventory, assume it needs to be created
+		if len(ips) == 0 {
 			log.Printf("Response the %s IPXE config file for %s (%s)", part, ip, uuid)
 			body, err := renderIpxeUUIDConfFile(uuid, part)
 			if err != nil {
@@ -494,12 +495,18 @@ func getChainByUUID(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "failed to write iPXE config for uuid", http.StatusNoContent)
 				return
 			}
-		} else if uuid != uuidFromInventory {
-			log.Printf("SECURITY Error Alert! Request %#v", r)
-			log.Printf("Provided UUID (%s) does not match with IP (%s) from inventory (%s)", uuid, ip, uuidFromInventory)
-			http.Error(w, "Internal Error", http.StatusNoContent)
-			return
-		} else {
+		}
+
+		ipIsValid := false
+		for _, knownIP := range ips {
+			if knownIP == ip {
+				ipIsValid = true
+				break
+			}
+		}
+
+		// ip is known from inventory
+		if ipIsValid {
 			e := &event{
 				UUID:    uuid,
 				Reason:  "IPXE",
@@ -532,6 +539,11 @@ func getChainByUUID(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Key not found", http.StatusNoContent)
 				return
 			}
+		} else {
+			log.Printf("SECURITY Error Alert! Request %#v", r)
+			log.Printf("Provided UUID (%s) does not match with IP (%s) from inventory", uuid, ip)
+			http.Error(w, "Internal Error", http.StatusNoContent)
+			return
 		}
 	}
 }
@@ -772,35 +784,35 @@ func getUUIDbyInventory(mac string) string {
 	return clientUUID
 }
 
-func getUUIDByInventoryIP(ip string) (string, error) {
+func getIPsFromInventory(uuid string) ([]string, error) {
 	if err := inv.AddToScheme(scheme.Scheme); err != nil {
 		err = errors.Wrap(err, "Unable to add registered types inventory to client scheme")
-		return "", err
+		return []string{}, err
 	}
 
 	cl := createClient()
-
-	ipLabel := "machine.onmetal.de/ip-address-" + strings.ReplaceAll(ip, ":", "")
-	var inventory inv.InventoryList
-	err := cl.List(context.Background(), &inventory, client.InNamespace(conf.InventoryNS), client.MatchingLabels{ipLabel: ""})
+	inventory := &inv.Inventory{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      uuid,
+			Namespace: conf.InventoryNS,
+		},
+	}
+	err := cl.Get(context.Background(), client.ObjectKeyFromObject(inventory), inventory)
 	if err != nil {
-		err = errors.Wrapf(err, "Failed to list crds inventories in namespace %s", conf.InventoryNS)
-		return "", err
+		err = errors.Wrapf(err, "Failed to get inventory %s in namespace %s", uuid, conf.InventoryNS)
+		return []string{}, err
 	}
 
-	var uuid string
-	if len(inventory.Items) > 0 {
-		err = errors.Wrapf(err, "Found more then one inventory for IP: %s", ip)
-		return "", err
-	} else if len(inventory.Items) == 0 {
-		log.Printf("No inventory found for IP: %s, assume it needs to be created\n", ip)
-		return "", nil
-	} else if len(inventory.Items) == 1 {
-		uuid = inventory.Items[0].Spec.System.ID
+	ips := []string{}
+	for _, label := range inventory.Labels {
+		if strings.HasPrefix(label, "machine.onmetal.de/ip-address-") {
+			ip := strings.ReplaceAll(label, "machine.onmetal.de/ip-address-", "")
+			ip = strings.ReplaceAll(ip, "_", ":")
+			ips = append(ips, ip)
+		}
 	}
-	log.Printf("Found inventory uuid %s for IP: %s\n", uuid, ip)
 
-	return uuid, nil
+	return ips, nil
 }
 
 func IpVersion(s string) string {
