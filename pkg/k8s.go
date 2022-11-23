@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"context"
+	"fmt"
+	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
 	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -19,6 +21,9 @@ type K8sClient struct {
 
 func NewK8sClient() K8sClient {
 	if err := inventoryv1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		log.Fatal("Unable to add registered types inventory to client scheme: %s", err)
+	}
+	if err := ipamv1alpha1.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme: %s", err)
 	}
 
@@ -65,28 +70,49 @@ func (k K8sClient) getConfigMag(name, namespace string) (*corev1.ConfigMap, erro
 	return configMap, nil
 }
 
-func (k K8sClient) getIPsFromInventory(uuid, namespace string) ([]string, error) {
+func (k K8sClient) getInventoryUUIDByMac(mac, namespace string) (string, error) {
 
-	inventory := &inventoryv1alpha1.Inventory{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      uuid,
-			Namespace: namespace,
-		},
-	}
-	err := k.Client.Get(context.Background(), client.ObjectKeyFromObject(inventory), inventory)
+	mac = "machine.onmetal.de/mac-address-" + strings.ReplaceAll(mac, ":", "")
+	var inventory inventoryv1alpha1.InventoryList
+	err := k.Client.List(context.Background(), &inventory, client.InNamespace(namespace), client.MatchingLabels{mac: ""})
 	if err != nil {
-		err = errors.Wrapf(err, "Failed to get inventory %s in namespace %s", uuid, namespace)
-		return []string{}, err
+		err = errors.Wrapf(err, "Failed to list inventories in namespace %s", namespace)
+		return "", err
 	}
 
-	ips := []string{}
-	for label, _ := range inventory.Labels {
-		if strings.HasPrefix(label, "machine.onmetal.de/ip-address-") {
-			ip := strings.ReplaceAll(label, "machine.onmetal.de/ip-address-", "")
-			ip = strings.ReplaceAll(ip, "_", ":")
-			ips = append(ips, ip)
-		}
+	var uuid string
+	if len(inventory.Items) == 0 {
+		return "", nil
+	} else if len(inventory.Items) > 1 {
+		return "", errors.New(fmt.Sprintf("Multiple inventories found for mac %s", mac))
+	} else if len(inventory.Items) == 1 {
+		uuid = inventory.Items[0].Spec.System.ID
 	}
 
-	return ips, nil
+	log.Printf("Found Inventory UUID %s for MAC: %s", uuid, mac)
+	return uuid, nil
+}
+
+func (k K8sClient) getIPByMac(mac, namespace string) (string, error) {
+	var ips ipamv1alpha1.IPList
+	err := k.Client.List(context.Background(),
+		&ips,
+		client.InNamespace(namespace),
+		client.MatchingLabels{"mac": strings.ReplaceAll(mac, ":", "")})
+	if err != nil {
+		err = errors.Wrapf(err, "Failed to list IPAM IPs in namespace %s", namespace)
+		return "", err
+	}
+
+	var ip string
+	if len(ips.Items) == 0 {
+		return "", errors.New(fmt.Sprintf("Mac %s is unknown", mac))
+	} else if len(ips.Items) > 1 {
+		return "", errors.New(fmt.Sprintf("Mac %s has more then one IPs", mac))
+	} else if len(ips.Items) == 1 {
+		ip = ips.Items[0].Spec.IP.String()
+	}
+
+	log.Printf("Found IPAM IP %s for MAC: %s", ip, mac)
+	return ip, nil
 }

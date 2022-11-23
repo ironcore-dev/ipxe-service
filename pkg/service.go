@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/sprig"
 	"github.com/gorilla/mux"
+	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
@@ -26,8 +27,8 @@ func (i IPXE) Start() {
 
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/ipxe", i.getChainDefault).Methods("GET")
-	rtr.HandleFunc("/ipxe/{uuid:[a-z0-9-]+}/{part:[a-z0-9-]+}", i.getChainByUUID).Methods("GET")
-	rtr.HandleFunc("/ignition/{uuid:[a-z0-9-]+}/{part:[a-z0-9-]+}", i.getIgnitionByUUID).Methods("GET")
+	rtr.HandleFunc("/ipxe/{mac:[a-f0-9:]+}/{part:[a-z0-9-]+}", i.getChainByMac).Methods("GET")
+	rtr.HandleFunc("/ignition/{mac:[a-f0-9:]+}/{uuid:[a-z0-9-]+}/{part:[a-z0-9-]+}", i.getIgnitionByMacAndUUID).Methods("GET")
 	rtr.HandleFunc("/", ok200).Methods("GET")
 
 	http.Handle("/", rtr)
@@ -72,106 +73,110 @@ func (i IPXE) getCert(w http.ResponseWriter, _ *http.Request) {
 	_, _ = fmt.Fprintf(w, configMap.Data["ca.crt"])
 }
 
-func (i IPXE) getChainByUUID(w http.ResponseWriter, r *http.Request) {
-	var uuid string
+func (i IPXE) getChainByMac(w http.ResponseWriter, r *http.Request) {
+	var mac string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		requestIPXEDuration.WithLabelValues(uuid).Observe(v)
+		requestIPXEDuration.WithLabelValues(mac).Observe(v)
 	}))
 	defer func() {
 		timer.ObserveDuration()
 	}()
 
 	params := mux.Vars(r)
-	uuid = params["uuid"]
+	mac = params["mac"]
 	part := params["part"]
-	if uuid != "" {
-		ip := i.getIP(r)
-		ips, err := i.K8sClient.getIPsFromInventory(uuid, i.Config.InventoryNS)
+	if mac != "" {
+		ip, err := i.getIP(r)
+		if err != nil {
+			log.Printf("Error: %s\n", err)
+			http.Error(w, "Internal Error", http.StatusNoContent)
+			return
+		}
+		ipByMac, err := i.K8sClient.getIPByMac(mac, i.Config.IpamNS)
 		if err != nil {
 			log.Printf("Error: %s\n", err)
 			http.Error(w, "Internal Error", http.StatusNoContent)
 			return
 		}
 
-		// no IPs are set for this inventory, assume it needs to be created
-		if len(ips) == 0 {
-			log.Printf("Response the %s IPXE config file for %s (%s)", part, ip, uuid)
-			body, err := renderIpxeUUIDConfFile(uuid, part)
+		if ip != ipByMac {
+			log.Printf("SECURITY Error Alert! Request %#v", r)
+			log.Printf("Request IP (%s) does not match with IP (%s) from IPAM", ip, ipByMac)
+			http.Error(w, "Internal Error", http.StatusNoContent)
+			return
+		}
+
+		uuid, err := i.K8sClient.getInventoryUUIDByMac(mac, i.Config.InventoryNS)
+		if err != nil {
+			log.Printf("Error: %s\n", err)
+			http.Error(w, "Internal Error", http.StatusNoContent)
+			return
+		}
+
+		// if inventory uuid is empty, assume it needs to be created
+		if uuid == "" {
+			log.Printf("Response the %s IPXE config file for %s (%s)", part, ip, mac)
+			body, err := renderIpxeMacConfFile(mac, part)
 			if err != nil {
-				http.Error(w, "failed to render iPXE config for uuid", http.StatusNoContent)
+				http.Error(w, "failed to render iPXE config for mac", http.StatusNoContent)
 				return
 			}
 			_, err = w.Write(body)
 			if err != nil {
-				http.Error(w, "failed to write iPXE config for uuid", http.StatusNoContent)
+				http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
 				return
 			}
 		} else {
-			// check if we know the provided ip
-			ipIsValid := false
-			for _, knownIP := range ips {
-				if knownIP == ip {
-					ipIsValid = true
-					break
-				}
+
+			//TODO(flpeter) check with Andre
+			//e := &event{
+			//	UUID:    uuid,
+			//	Reason:  "IPXE",
+			//	Message: fmt.Sprintf("IPXE request for MAC %s", uuid),
+			//}
+			//h := newHttp()
+			//requestBody, _ := json.Marshal(e)
+			//resp, err := h.postRequest(requestBody)
+			//if err != nil {
+			//	h.log.Info("Can't send a request", err)
+			//	log.Println(string(resp))
+			//}
+			log.Printf("Generate IPXE config for the client ...\n")
+
+			configMapName := "ipxe-" + uuid
+			configMap, err := i.K8sClient.getConfigMag(configMapName, i.Config.ConfigmapNS)
+			if err != nil {
+				http.Error(w, "UUID not found", http.StatusNoContent)
+				return
 			}
 
-			// ip is known from inventory, so we need to deliver the ipxe-uuid config
-			if ipIsValid {
-				//TODO(flpeter) check with Andre
-				//e := &event{
-				//	UUID:    uuid,
-				//	Reason:  "IPXE",
-				//	Message: fmt.Sprintf("IPXE request for MAC %s", uuid),
-				//}
-				//h := newHttp()
-				//requestBody, _ := json.Marshal(e)
-				//resp, err := h.postRequest(requestBody)
-				//if err != nil {
-				//	h.log.Info("Can't send a request", err)
-				//	log.Println(string(resp))
-				//}
-				log.Printf("Generate IPXE config for the client ...\n")
-
-				configMapName := "ipxe-" + uuid
-				configMap, err := i.K8sClient.getConfigMag(configMapName, i.Config.ConfigmapNS)
+			if len(configMap.Data) == 0 {
+				log.Printf("Not found configmap with UUID  %s", uuid)
+				http.Error(w, "UUID not found", http.StatusNoContent)
+				return
+			}
+			userData, ok := configMap.Data[part]
+			if ok {
+				_, err = w.Write([]byte(userData))
 				if err != nil {
-					http.Error(w, "UUID not found", http.StatusNoContent)
-					return
-				}
-
-				if len(configMap.Data) == 0 {
-					log.Printf("Not found configmap with UUID  %s", uuid)
-					http.Error(w, "UUID not found", http.StatusNoContent)
-					return
-				}
-				userData, ok := configMap.Data[part]
-				if ok {
-					_, err = w.Write([]byte(userData))
-					if err != nil {
-						http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
-						return
-					}
-				} else {
-					log.Printf("key %s not found in ConfigMap for uuid  %s", part, uuid)
-					http.Error(w, "Key not found", http.StatusNoContent)
+					http.Error(w, "failed to write iPXE config for mac", http.StatusNoContent)
 					return
 				}
 			} else {
-				log.Printf("SECURITY Error Alert! Request %#v", r)
-				log.Printf("Provided UUID (%s) does not match with IP (%s) from inventory", uuid, ip)
-				http.Error(w, "Internal Error", http.StatusNoContent)
+				log.Printf("key %s not found in ConfigMap for uuid  %s", part, uuid)
+				http.Error(w, "Key not found", http.StatusNoContent)
 				return
 			}
 		}
 	}
 }
 
-func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
+func (i IPXE) getIgnitionByMacAndUUID(w http.ResponseWriter, r *http.Request) {
+	var mac string
 	var uuid string
 	var part string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		requestIGNITIONDuration.WithLabelValues(uuid).Observe(v)
+		requestIGNITIONDuration.WithLabelValues(mac).Observe(v)
 	}))
 
 	defer func() {
@@ -179,15 +184,45 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	params := mux.Vars(r)
+	mac = params["mac"]
+	if mac == "" {
+		http.Error(w, "no mac specified", http.StatusNoContent)
+		return
+	}
+
 	uuid = params["uuid"]
+	if uuid == "" {
+		http.Error(w, "no uuid specified", http.StatusNoContent)
+		return
+	}
 	part = params["part"]
 	if part == "" {
 		http.Error(w, "no ignition part specified", http.StatusNoContent)
 		return
 	}
 
-	ip := i.getIP(r)
-	ips, err := i.K8sClient.getIPsFromInventory(uuid, i.Config.InventoryNS)
+	ip, err := i.getIP(r)
+	if err != nil {
+		log.Printf("Error: %s\n", err)
+		http.Error(w, "Internal Error", http.StatusNoContent)
+		return
+	}
+
+	ipByMac, err := i.K8sClient.getIPByMac(mac, i.Config.IpamNS)
+	if err != nil {
+		log.Printf("Error: %s\n", err)
+		http.Error(w, "Internal Error", http.StatusNoContent)
+		return
+	}
+
+	if ip != ipByMac {
+		log.Printf("SECURITY Error Alert! Request %#v", r)
+		log.Printf("Request IP (%s) does not match with IP (%s) from IPAM", ip, ipByMac)
+		http.Error(w, "Internal Error", http.StatusNoContent)
+		return
+	}
+
+	uuidByMac, err := i.K8sClient.getInventoryUUIDByMac(mac, i.Config.InventoryNS)
 	if err != nil {
 		log.Printf("Error: %s\n", err)
 		http.Error(w, "Internal Error", http.StatusNoContent)
@@ -195,17 +230,16 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	partKey := fmt.Sprintf("ignition-%s", part)
-	// no IPs are set for this inventory, assume it needs to be created
-	if len(ips) == 0 {
+	// if inventory uuid is empty, assume it needs to be created
+	if uuidByMac == "" {
 		var dataIn []byte
-		var err error
-		log.Printf("Render default Ignition part %s from Secret, uuid is %s\n", partKey, uuid)
+		log.Printf("Render default Ignition part %s from Secret, mac is %s and uuid is %s\n", partKey, mac, uuid)
 		file := filepath.Join(DefaultSecretPath, partKey)
 		if doesFileExist(file) {
 			dataIn, err = os.ReadFile(file)
 		}
 		if len(dataIn) == 0 {
-			log.Printf("Render default Ignition part %s from ConfigMap, uuid is %s\n", partKey, uuid)
+			log.Printf("Render default Ignition part %s from ConfigMap, mac is %s and uuid is %s\n", partKey, mac, uuid)
 			file = filepath.Join(DefaultConfigMapPath, partKey)
 			if doesFileExist(file) {
 				dataIn, err = os.ReadFile(file)
@@ -233,11 +267,12 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		type Config struct {
+			Mac        string
 			UUID       string
 			Kubeconfig string
 			Hostname   string
 		}
-		cfg := Config{UUID: uuid, Kubeconfig: string(kubeconfig), Hostname: uuid}
+		cfg := Config{Mac: mac, UUID: uuid, Kubeconfig: string(kubeconfig), Hostname: uuid}
 		tmpl, err := template.New("ignition").Funcs(sprig.HermeticTxtFuncMap()).Parse(string(dataIn))
 		if err != nil {
 			http.Error(w, "Error in ignition template creation", http.StatusNoContent)
@@ -253,22 +288,13 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 
 		_, err = w.Write([]byte(resData))
 		if err != nil {
-			log.Printf("Failed to write ignition for mac: %s err: %s", uuid, err)
+			log.Printf("Failed to write ignition for mac: %s err: %s", mac, err)
 			http.Error(w, "Failed to write ignition for mac", http.StatusNoContent)
 			return
 		}
 	} else {
-		// check if we know the provided ip
-		ipIsValid := false
-		for _, knownIP := range ips {
-			if knownIP == ip {
-				ipIsValid = true
-				break
-			}
-		}
-
-		// ip is known from inventory, so we need to deliver the ipxe-uuid config
-		if ipIsValid {
+		// uuid from mac and provided uuid are matching, so we need to deliver the ipxe-uuid config
+		if uuidByMac == uuid {
 			var userData string
 			secretName := "ipxe-" + uuid
 			secret, err := i.K8sClient.getSecret(secretName, i.Config.ConfigmapNS)
@@ -295,7 +321,7 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 
 				_, err := w.Write([]byte(userDataJson))
 				if err != nil {
-					log.Printf("Failed to write ignition for uuid: %s err: %s", uuid, err)
+					log.Printf("Failed to write ignition for uuid: %s err: %s", mac, err)
 					http.Error(w, "Failed to write ignition for uuid", http.StatusNoContent)
 					return
 				}
@@ -303,35 +329,49 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			log.Printf("SECURITY Error Alert! Request %#v", r)
-			log.Printf("Provided UUID (%s) does not match with IP (%s) from inventory", uuid, ip)
+			log.Printf("UUID (%s) by mac does not match with provided UUID (%s) from inventory", uuidByMac, uuid)
 			http.Error(w, "Internal Error", http.StatusNoContent)
 			return
 		}
 	}
 }
 
-func (i IPXE) getIP(r *http.Request) string {
+func (i IPXE) getIP(r *http.Request) (string, error) {
 	var clientIP string
-
+	var err error
 	if i.Config.DisableForwardHeader {
-		clientIP, _, _ = net.SplitHostPort(r.RemoteAddr)
+		clientIP, _, err = net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			return "", err
+		}
 	} else {
 		clientIP = r.Header.Get("X-FORWARDED-FOR")
 		if clientIP == "" {
-			clientIP, _, _ = net.SplitHostPort(r.RemoteAddr)
+			clientIP, _, err = net.SplitHostPort(r.RemoteAddr)
+			if err != nil {
+				return "", err
+			}
 		}
 	}
 
 	if IpVersion(clientIP) == "ipv6" {
-		netip := net.ParseIP(clientIP)
-		return FullIPv6(netip)
+		ip, err := ipamv1alpha1.IPAddrFromString(clientIP)
+		if err != nil {
+			return "", err
+		}
+		return ip.String(), nil
 	}
 
-	return clientIP
+	return clientIP, nil
 }
 
 func (i IPXE) reloadApp(w http.ResponseWriter, r *http.Request) {
-	ip := i.getIP(r)
+	ip, err := i.getIP(r)
+	if err != nil {
+		_, _ = w.Write([]byte(fmt.Sprintf("error, %s", err)))
+		return
+	}
+
 	if ip == "127.0.0.1" {
 		log.Print("Reload server because changed configmap")
 		_, _ = w.Write([]byte("reloaded"))

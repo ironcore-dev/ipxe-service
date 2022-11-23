@@ -80,16 +80,16 @@ func readIpxeConfFile(part string) ([]byte, error) {
 	return ipxeData, nil
 }
 
-func renderIpxeUUIDConfFile(uuid, part string) ([]byte, error) {
+func renderIpxeMacConfFile(mac, part string) ([]byte, error) {
 	ipxeData, err := readIpxeConfFile(part)
 	if err != nil {
 		return nil, err
 	}
 
 	type Config struct {
-		UUID string
+		Mac string
 	}
-	cfg := Config{UUID: uuid}
+	cfg := Config{Mac: mac}
 	tmpl, err := template.New(part).Funcs(sprig.HermeticTxtFuncMap()).Parse(string(ipxeData))
 	if err != nil {
 		return nil, err

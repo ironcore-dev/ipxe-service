@@ -57,7 +57,7 @@ func TestIgnitionHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -86,7 +86,7 @@ func TestIgnition204Handler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusNoContent {
@@ -117,7 +117,7 @@ func TestIgnPartHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -146,7 +146,7 @@ func TestIgnSecretPartHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
