@@ -21,7 +21,7 @@ test:
 	kubectl apply -f config/samples/ipam.onmetal.de_subnets.yaml --force
 	kubectl apply -f config/samples/machine.onmetal.de_inventories.yaml --force
 	kubectl apply -f config/samples/for_tests.yaml --force
-	go test -v
+	go test pkg -v
 
 image: test
 	podman build . -t ${IMG} --build-arg GOPRIVATE=${GOPRIVATE} --build-arg GIT_USER=${GIT_USER} --build-arg GIT_PASSWORD=${GIT_PASSWORD}

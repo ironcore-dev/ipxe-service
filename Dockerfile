@@ -1,4 +1,4 @@
-FROM golang:1.18 as builder
+FROM golang:1.19 as builder
 
 WORKDIR /opt/ipxe
 
@@ -15,6 +15,7 @@ RUN --mount=type=ssh --mount=type=secret,id=github_pat GITHUB_PAT_PATH=/run/secr
   && go mod download
 
 # Copy the go source
+COPY pkg pkg
 COPY main.go main.go
 
 # Build

@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// TODO fix tests
 func TestGetChainHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/ipxe", nil)
 	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
@@ -13,8 +14,15 @@ func TestGetChainHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	conf := GetConf()
+	k8sClient := NewK8sClient()
+	ipxe := IPXE{
+		Config:    conf,
+		K8sClient: k8sClient,
+	}
+
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(getChainDefault)
+	handler := http.HandlerFunc(ipxe.getChainDefault)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -41,8 +49,15 @@ func TestIgnitionHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	conf := GetConf()
+	k8sClient := NewK8sClient()
+	ipxe := IPXE{
+		Config:    conf,
+		K8sClient: k8sClient,
+	}
+
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(getIgnition)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -63,8 +78,15 @@ func TestIgnition204Handler(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	conf := GetConf()
+	k8sClient := NewK8sClient()
+	ipxe := IPXE{
+		Config:    conf,
+		K8sClient: k8sClient,
+	}
+
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(getIgnition)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusNoContent {
@@ -87,8 +109,15 @@ func TestIgnPartHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	conf := GetConf()
+	k8sClient := NewK8sClient()
+	ipxe := IPXE{
+		Config:    conf,
+		K8sClient: k8sClient,
+	}
+
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(getIgnition)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -109,8 +138,15 @@ func TestIgnSecretPartHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	conf := GetConf()
+	k8sClient := NewK8sClient()
+	ipxe := IPXE{
+		Config:    conf,
+		K8sClient: k8sClient,
+	}
+
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(getIgnition)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
