@@ -57,7 +57,7 @@ func TestIgnitionHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -86,12 +86,12 @@ func TestIgnition204Handler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusNoContent {
+	if status := rr.Code; status != http.StatusInternalServerError {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusNoContent)
+			status, http.StatusInternalServerError)
 	}
 
 	expected := `Not found ipam ip obj
@@ -117,7 +117,7 @@ func TestIgnPartHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -146,7 +146,7 @@ func TestIgnSecretPartHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByMacAndUUID)
+	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -173,7 +173,7 @@ func TestRoot200Handler(t *testing.T) {
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusNoContent)
+			status, http.StatusInternalServerError)
 	}
 
 	expected := "ok\n"

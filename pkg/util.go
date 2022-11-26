@@ -1,17 +1,17 @@
 package pkg
 
 import (
-	"bytes"
 	"encoding/hex"
-	"github.com/Masterminds/sprig"
+	"fmt"
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
-	"io/ioutil"
+	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
+	"github.com/pkg/errors"
 	"log"
 	"net"
 	"os"
 	"path"
-	"text/template"
+	"strings"
 )
 
 func IpVersion(s string) string {
@@ -68,9 +68,9 @@ func renderButane(dataIn []byte) string {
 func readIpxeConfFile(part string) ([]byte, error) {
 	var ipxeData []byte
 	var err error
-	ipxeData, err = ioutil.ReadFile(path.Join(DefaultSecretPath, part))
+	ipxeData, err = os.ReadFile(path.Join(DefaultSecretPath, part))
 	if err != nil {
-		ipxeData, err = ioutil.ReadFile(path.Join(DefaultConfigMapPath, part))
+		ipxeData, err = os.ReadFile(path.Join(DefaultConfigMapPath, part))
 		if err != nil {
 			log.Printf("Problem with default secret and configmap #%v ", err)
 			return nil, err
@@ -80,25 +80,20 @@ func readIpxeConfFile(part string) ([]byte, error) {
 	return ipxeData, nil
 }
 
-func renderIpxeMacConfFile(mac, part string) ([]byte, error) {
-	ipxeData, err := readIpxeConfFile(part)
-	if err != nil {
-		return nil, err
+func checkInventoryMac(inventory *inventoryv1alpha1.Inventory, mac string) error {
+
+	uuid := ""
+	if inventory.Spec.System != nil && inventory.Spec.System.ID != "" {
+		uuid = inventory.Spec.System.ID
+	}
+	for label, _ := range inventory.Labels {
+		if strings.HasPrefix(label, InventoryMacLabelPrefix) {
+			inventoryMac := strings.ReplaceAll(label, InventoryMacLabelPrefix, "")
+			if inventoryMac == mac {
+				return nil
+			}
+		}
 	}
 
-	type Config struct {
-		Mac string
-	}
-	cfg := Config{Mac: mac}
-	tmpl, err := template.New(part).Funcs(sprig.HermeticTxtFuncMap()).Parse(string(ipxeData))
-	if err != nil {
-		return nil, err
-	}
-	var ipxe bytes.Buffer
-	err = tmpl.Execute(&ipxe, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return ipxe.Bytes(), nil
+	return errors.New(fmt.Sprintf("Mac %s not found for Inventory %s", mac, uuid))
 }
