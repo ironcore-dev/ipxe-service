@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"log"
+	"net"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strings"
@@ -71,6 +72,11 @@ func (k K8sClient) getConfigMag(name, namespace string) (*corev1.ConfigMap, erro
 }
 
 func (k K8sClient) getMacFromIP(clientIP, namespace string) (string, error) {
+	if getIPVersion(clientIP) == "ipv6" {
+		ip := net.ParseIP(clientIP)
+		clientIP = getLongIPv6(ip)
+	}
+
 	var ips ipamv1alpha1.IPList
 	err := k.Client.List(context.Background(),
 		&ips,

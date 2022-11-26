@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Masterminds/sprig"
 	"github.com/gorilla/mux"
-	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
@@ -352,14 +351,6 @@ func (i IPXE) getIP(r *http.Request) (string, error) {
 				return "", err
 			}
 		}
-	}
-
-	if IpVersion(clientIP) == "ipv6" {
-		ip, err := ipamv1alpha1.IPAddrFromString(clientIP)
-		if err != nil {
-			return "", err
-		}
-		return ip.String(), nil
 	}
 
 	return clientIP, nil
