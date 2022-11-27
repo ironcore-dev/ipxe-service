@@ -3,21 +3,26 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"log"
+	"net"
+	"os"
+	"strings"
+
 	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
 	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"log"
-	"net"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"strings"
 )
 
 type K8sClient struct {
-	Client client.Client
+	Client        client.Client
+	EventRecorder record.EventRecorder
 }
 
 func NewK8sClient() K8sClient {
@@ -28,12 +33,30 @@ func NewK8sClient() K8sClient {
 		log.Fatal("Unable to add registered types inventory to client scheme: %s", err)
 	}
 
-	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
+	cfg := config.GetConfigOrDie()
+	cl, err := client.New(cfg, client.Options{})
 	if err != nil {
-		log.Fatal("Failed to create a client: ", err)
+		log.Fatal("Failed to create a controller runtime client: ", err)
 	}
+
+	corev1Client, err := corev1client.NewForConfig(cfg)
+	if err != nil {
+		log.Fatal("Failed to create a core client: ", err)
+	}
+
+	broadcaster := record.NewBroadcaster()
+
+	// Leader id, needs to be unique
+	id, err := os.Hostname()
+	if err != nil {
+		log.Fatal("Failed to get hostname: ", err)
+	}
+	recorder := broadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: id})
+	broadcaster.StartRecordingToSink(&corev1client.EventSinkImpl{Interface: corev1Client.Events("")})
+
 	return K8sClient{
-		Client: cl,
+		Client:        cl,
+		EventRecorder: recorder,
 	}
 }
 

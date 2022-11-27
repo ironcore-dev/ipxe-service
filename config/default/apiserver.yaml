@@ -7,7 +7,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ipam-inventory-reader
+  name: ipxe-service
 rules:
 - apiGroups:
   - ipam.onmetal.de
@@ -34,15 +34,21 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ipxe-read-ips
+  name: ipxe-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ipam-inventory-reader
+  name: ipxe-service
 subjects:
 - kind: ServiceAccount
   name: ipxe-service

@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	corev1 "k8s.io/api/core/v1"
 	"log"
 	"net"
 	"net/http"
@@ -121,26 +122,17 @@ func (i IPXE) getChainByUUID(w http.ResponseWriter, r *http.Request) {
 		} else {
 			err := checkInventoryMac(inventory, mac)
 			if err != nil {
+				i.K8sClient.EventRecorder.Eventf(inventory, corev1.EventTypeWarning,
+					"Denied", "Denied client %s because mac '%s' does not match for inventory", clientIP, mac)
 				log.Printf("SECURITY Error Alert! Request %#v", r)
 				log.Printf("MAC (%s) does not match with provided UUID (%s) from inventory", mac, uuid)
 				http.Error(w, "Internal Error", http.StatusInternalServerError)
 				return
 			}
 
-			//TODO(flpeter) check with Andre
-			//e := &event{
-			//	UUID:    uuid,
-			//	Reason:  "IPXE",
-			//	Message: fmt.Sprintf("IPXE request for MAC %s", uuid),
-			//}
-			//h := newHttp()
-			//requestBody, _ := json.Marshal(e)
-			//resp, err := h.postRequest(requestBody)
-			//if err != nil {
-			//	h.log.Info("Can't send a request", err)
-			//	log.Println(string(resp))
-			//}
-			log.Printf("Generate IPXE config for the client ...\n")
+			log.Printf("Generate iPXE config for the client %s\n", clientIP)
+			i.K8sClient.EventRecorder.Eventf(inventory, corev1.EventTypeNormal, "Generate",
+				"Generate iPXE config for client %s", clientIP)
 
 			configMapName := "ipxe-" + uuid
 			configMap, err := i.K8sClient.getConfigMag(configMapName, i.Config.ConfigmapNS)
@@ -215,20 +207,6 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//if clientIP != ipByMac {
-	//	log.Printf("SECURITY Error Alert! Request %#v", r)
-	//	log.Printf("Request IP (%s) does not match with IP (%s) from IPAM", clientIP, ipByMac)
-	//	http.Error(w, "Internal Error", http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	//uuidByMac, err := i.K8sClient.getInventoryUUIDByMac(mac, i.Config.InventoryNS)
-	//if err != nil {
-	//	log.Printf("Error: %s\n", err)
-	//	http.Error(w, "Internal Error", http.StatusInternalServerError)
-	//	return
-	//}
-
 	partKey := fmt.Sprintf("ignition-%s", part)
 	// if inventory uuid is empty, assume it needs to be created
 	if inventory.Spec.System == nil || inventory.Spec.System.ID == "" {
@@ -294,6 +272,8 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 	} else {
 		err = checkInventoryMac(inventory, mac)
 		if err != nil {
+			i.K8sClient.EventRecorder.Eventf(inventory, corev1.EventTypeWarning,
+				"Denied", "Denied client %s because mac '%s' does not match for inventory", clientIP, mac)
 			log.Printf("SECURITY Error Alert! Request %#v", r)
 			log.Printf("MAC (%s) does not match with provided UUID (%s) from inventory", mac, uuid)
 			http.Error(w, "Internal Error", http.StatusInternalServerError)
@@ -319,10 +299,16 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "no data found", http.StatusInternalServerError)
 			return
 		} else {
-			log.Printf("UserData: %+v", userData)
+			log.Printf("Render ignition %s for client %s", secretName, clientIP)
+			i.K8sClient.EventRecorder.Eventf(inventory, corev1.EventTypeNormal, "Ignition",
+				"Render ignition %s for client %s", secretName, clientIP)
+
+			//TODO add as debug log
+			//log.Printf("UserData: %+v", userData)
 			userDataByte := []byte(userData)
 			userDataJson := renderButane(userDataByte)
-			log.Printf("UserDataJson: %s", userDataJson)
+			//TODO add as debug log
+			//log.Printf("UserDataJson: %s", userDataJson)
 
 			_, err := w.Write([]byte(userDataJson))
 			if err != nil {
