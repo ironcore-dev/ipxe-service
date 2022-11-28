@@ -57,7 +57,7 @@ func (i IPXE) getChainDefault(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	_, _ = fmt.Fprintf(w, string(data))
+	_, _ = fmt.Fprint(w, string(data))
 }
 
 func (i IPXE) getCert(w http.ResponseWriter, _ *http.Request) {
@@ -361,5 +361,8 @@ func (i IPXE) reloadApp(w http.ResponseWriter, r *http.Request) {
 }
 
 func ok200(w http.ResponseWriter, _ *http.Request) {
-	w.Write([]byte("ok\n"))
+	_, err := w.Write([]byte("ok\n"))
+	if err != nil {
+		http.Error(w, "Failed to return 200 (OK)", http.StatusInternalServerError)
+	}
 }
