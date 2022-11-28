@@ -27,10 +27,10 @@ type K8sClient struct {
 
 func NewK8sClient() K8sClient {
 	if err := inventoryv1alpha1.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types inventory to client scheme: %s", err)
+		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 	}
 	if err := ipamv1alpha1.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types inventory to client scheme: %s", err)
+		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 	}
 
 	cfg := config.GetConfigOrDie()

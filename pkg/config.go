@@ -2,9 +2,10 @@ package pkg
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v1"
 	"log"
 	"os"
+
+	"gopkg.in/yaml.v1"
 )
 
 type Config struct {
