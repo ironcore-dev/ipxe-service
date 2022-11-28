@@ -3,15 +3,16 @@ package pkg
 import (
 	"encoding/hex"
 	"fmt"
-	buconfig "github.com/coreos/butane/config"
-	"github.com/coreos/butane/config/common"
-	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
-	"github.com/pkg/errors"
 	"log"
 	"net"
 	"os"
 	"path"
 	"strings"
+
+	buconfig "github.com/coreos/butane/config"
+	"github.com/coreos/butane/config/common"
+	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
+	"github.com/pkg/errors"
 )
 
 func getIPVersion(s string) string {
@@ -85,7 +86,7 @@ func checkInventoryMac(inventory *inventoryv1alpha1.Inventory, mac string) error
 	if inventory.Spec.System != nil && inventory.Spec.System.ID != "" {
 		uuid = inventory.Spec.System.ID
 	}
-	for label, _ := range inventory.Labels {
+	for label := range inventory.Labels {
 		if strings.HasPrefix(label, InventoryMacLabelPrefix) {
 			inventoryMac := strings.ReplaceAll(label, InventoryMacLabelPrefix, "")
 			if inventoryMac == mac {

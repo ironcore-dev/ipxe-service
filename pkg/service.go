@@ -3,17 +3,18 @@ package pkg
 import (
 	"bytes"
 	"fmt"
-	"github.com/Masterminds/sprig"
-	"github.com/gorilla/mux"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	corev1 "k8s.io/api/core/v1"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"github.com/Masterminds/sprig"
+	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type IPXE struct {
@@ -360,5 +361,5 @@ func (i IPXE) reloadApp(w http.ResponseWriter, r *http.Request) {
 }
 
 func ok200(w http.ResponseWriter, _ *http.Request) {
-	_, _ = w.Write([]byte("ok\n"))
+	w.Write([]byte("ok\n"))
 }
