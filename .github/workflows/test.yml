@@ -8,6 +8,18 @@ on:
       - '**/*.md'
 
 jobs:
+  kustomize-test:
+    runs-on: [ self-hosted, Linux, X64 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Complie manifests
+        uses: azure/k8s-bake@v2.3
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: './config/default/'
+          kubectl-version: 'latest'
+          silent: 'false'
   checks:
     name: run
     runs-on: ubuntu-latest
