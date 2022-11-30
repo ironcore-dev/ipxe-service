@@ -6,7 +6,7 @@ on:
       - published
   push:
     branches:
-      - master
+      - main
     tags:
       - v*
     paths-ignore:
@@ -35,7 +35,7 @@ jobs:
             type=ref,event=pr
             type=sha
           flavor: |
-            latest=${{ github.ref == 'refs/heads/master' }}
+            latest=${{ github.ref == 'refs/heads/main' }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
