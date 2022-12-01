@@ -41,11 +41,15 @@ vet: ## Run go vet against code.
 lint:
 	golangci-lint run ./...
 
-.PHONY: test
-test:
+.PHONY: setup-envtest
+setup-envtest:
 	mkdir -p $(LOCAL_TESTBIN)
-	GOBIN=$(GOBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_SHA)
-	KUBEBUILDER_ASSETS="$(shell $(GOBIN)/setup-envtest use $(ENVTEST_K8S_VERSION) -i --bin-dir $(LOCAL_TESTBIN) -p path)" \
+	GOBIN=$(LOCAL_TESTBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_SHA)
+	$(LOCAL_TESTBIN)/setup-envtest use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCAL_TESTBIN)
+
+.PHONY: test
+test: setup-envtest
+	KUBEBUILDER_ASSETS="$(shell $(LOCAL_TESTBIN)/setup-envtest use $(ENVTEST_K8S_VERSION) -i --bin-dir $(LOCAL_TESTBIN) -p path)" \
 	ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH=go1.19 \
 	IPXE_DEFAULT_SECRET_PATH="../config/samples/ipxe-default-secret" \
 	IPXE_DEFAULT_CONFIGMAP_PATH="../config/samples/ipxe-default-cm" \
