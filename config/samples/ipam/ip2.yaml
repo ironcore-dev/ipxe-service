@@ -1,0 +1,13 @@
+apiVersion: ipam.onmetal.de/v1alpha1
+kind: IP
+metadata:
+  labels:
+    ip: fd00-0da8-fff6-3302-0000-0000-000b-0002
+    mac: 08c0eba29905
+    origin: dhcp
+  name: fd00-0da8-fff6-3302-0000-0000-000b-0002-dhcp
+  namespace: metal-api-system
+spec:
+  ip: fd00:da8:fff6:3302::b:2
+  subnet:
+    name: dhcp

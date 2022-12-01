@@ -1,0 +1,7 @@
+apiVersion: ipam.onmetal.de/v1alpha1
+kind: Network
+metadata:
+  name: dhcp
+  namespace: metal-api-system
+spec:
+  description: DHCP Net

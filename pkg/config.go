@@ -17,9 +17,9 @@ type Config struct {
 	DisableForwardHeader bool   `yaml:"disable-forward-header,omitempty"`
 }
 
-func GetConf() Config {
+func GetConf(configFile string) Config {
 	var c Config
-	yamlFile, err := os.ReadFile(ConfigFile)
+	yamlFile, err := os.ReadFile(configFile)
 	if err != nil {
 		log.Printf("Can not read config %s, err %s\n", ConfigFile, err)
 		ns, _ := getInClusterNamespace()

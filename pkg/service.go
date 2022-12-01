@@ -26,12 +26,7 @@ func (i IPXE) Start() {
 	prometheus.MustRegister(requestIPXEDuration)
 	prometheus.MustRegister(requestIGNITIONDuration)
 
-	rtr := mux.NewRouter()
-	rtr.HandleFunc("/ipxe", i.getChainDefault).Methods("GET")
-	rtr.HandleFunc("/ipxe/{uuid:[a-f0-9-]+}/{part:[a-z0-9-]+}", i.getChainByUUID).Methods("GET")
-	rtr.HandleFunc("/ignition/{uuid:[a-z0-9-]+}/{part:[a-z0-9-]+}", i.getIgnitionByUUID).Methods("GET")
-	rtr.HandleFunc("/", ok200).Methods("GET")
-
+	rtr := i.getRouter()
 	http.Handle("/", rtr)
 	http.HandleFunc("/-/reload", i.reloadApp)
 	http.Handle("/metrics", promhttp.Handler())
@@ -40,7 +35,15 @@ func (i IPXE) Start() {
 		log.Fatal("Failed to start IPXE Server", err)
 	}
 }
+func (i IPXE) getRouter() *mux.Router {
+	rtr := mux.NewRouter()
+	rtr.HandleFunc("/ipxe", i.getChainDefault).Methods("GET")
+	rtr.HandleFunc("/ipxe/{uuid:[a-f0-9-]+}/{part:[a-z0-9-]+}", i.getChainByUUID).Methods("GET")
+	rtr.HandleFunc("/ignition/{uuid:[a-z0-9-]+}/{part:[a-z0-9-]+}", i.getIgnitionByUUID).Methods("GET")
+	rtr.HandleFunc("/", ok200).Methods("GET")
 
+	return rtr
+}
 func (i IPXE) getChainDefault(w http.ResponseWriter, _ *http.Request) {
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
 		requestIPXEDuration.WithLabelValues("default").Observe(v)
@@ -213,13 +216,21 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 	if inventory.Spec.System == nil || inventory.Spec.System.ID == "" {
 		var dataIn []byte
 		log.Printf("Render default Ignition part %s from Secret, mac is %s and uuid is %s\n", partKey, mac, uuid)
-		file := filepath.Join(DefaultSecretPath, partKey)
+		defaultSecretPath := os.Getenv("IPXE_DEFAULT_SECRET_PATH")
+		if defaultSecretPath == "" {
+			defaultSecretPath = DefaultSecretPath
+		}
+		file := filepath.Join(defaultSecretPath, partKey)
 		if doesFileExist(file) {
 			dataIn, err = os.ReadFile(file)
 		}
 		if len(dataIn) == 0 {
 			log.Printf("Render default Ignition part %s from ConfigMap, mac is %s and uuid is %s\n", partKey, mac, uuid)
-			file = filepath.Join(DefaultConfigMapPath, partKey)
+			defaultConfigMapPath := os.Getenv("IPXE_DEFAULT_CONFIGMAP_PATH")
+			if defaultConfigMapPath == "" {
+				defaultConfigMapPath = DefaultConfigMapPath
+			}
+			file = filepath.Join(defaultConfigMapPath, partKey)
 			if doesFileExist(file) {
 				dataIn, err = os.ReadFile(file)
 			}
@@ -262,7 +273,11 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error in ignition template rendering", http.StatusInternalServerError)
 			return
 		}
-		resData := renderButane(ignition.Bytes())
+		resData, err := renderButane(ignition.Bytes())
+		if err != nil {
+			http.Error(w, "Error in render butane", http.StatusInternalServerError)
+			return
+		}
 
 		_, err = w.Write([]byte(resData))
 		if err != nil {
@@ -307,11 +322,15 @@ func (i IPXE) getIgnitionByUUID(w http.ResponseWriter, r *http.Request) {
 			//TODO add as debug log
 			//log.Printf("UserData: %+v", userData)
 			userDataByte := []byte(userData)
-			userDataJson := renderButane(userDataByte)
+			userDataJson, err := renderButane(userDataByte)
+			if err != nil {
+				http.Error(w, "Error in render butane", http.StatusInternalServerError)
+				return
+			}
 			//TODO add as debug log
 			//log.Printf("UserDataJson: %s", userDataJson)
 
-			_, err := w.Write([]byte(userDataJson))
+			_, err = w.Write([]byte(userDataJson))
 			if err != nil {
 				log.Printf("Failed to write ignition for uuid: %s err: %s", mac, err)
 				http.Error(w, "Failed to write ignition for uuid", http.StatusInternalServerError)

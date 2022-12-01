@@ -3,9 +3,11 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"k8s.io/client-go/rest"
 	"log"
 	"net"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strings"
 
 	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
@@ -17,7 +19,6 @@ import (
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 type K8sClient struct {
@@ -25,7 +26,7 @@ type K8sClient struct {
 	EventRecorder record.EventRecorder
 }
 
-func NewK8sClient() K8sClient {
+func NewK8sClient(cfg *rest.Config, options client.Options) K8sClient {
 	if err := inventoryv1alpha1.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 	}
@@ -33,8 +34,11 @@ func NewK8sClient() K8sClient {
 		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 	}
 
-	cfg := config.GetConfigOrDie()
-	cl, err := client.New(cfg, client.Options{})
+	if cfg == nil {
+		cfg = config.GetConfigOrDie()
+	}
+
+	cl, err := client.New(cfg, options)
 	if err != nil {
 		log.Fatal("Failed to create a controller runtime client: ", err)
 	}

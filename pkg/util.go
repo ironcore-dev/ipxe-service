@@ -49,7 +49,7 @@ func doesFileExist(fileName string) bool {
 	}
 }
 
-func renderButane(dataIn []byte) string {
+func renderButane(dataIn []byte) (string, error) {
 	// render by butane to json
 	options := common.TranslateBytesOptions{
 		Raw:    true,
@@ -61,16 +61,25 @@ func renderButane(dataIn []byte) string {
 	if err != nil {
 		log.Printf("\nError in ignition rendering.dataIn is : %+v\n", dataIn)
 		log.Printf("Error in ignition rendering: %+v", err)
+		return "", err
 	}
-	return string(dataOut)
+	return string(dataOut), nil
 }
 
 func readIpxeConfFile(part string) ([]byte, error) {
 	var ipxeData []byte
 	var err error
-	ipxeData, err = os.ReadFile(path.Join(DefaultSecretPath, part))
+	defaultSecretPath := os.Getenv("IPXE_DEFAULT_SECRET_PATH")
+	if defaultSecretPath == "" {
+		defaultSecretPath = DefaultSecretPath
+	}
+	ipxeData, err = os.ReadFile(path.Join(defaultSecretPath, part))
 	if err != nil {
-		ipxeData, err = os.ReadFile(path.Join(DefaultConfigMapPath, part))
+		defaultConfigMapPath := os.Getenv("IPXE_DEFAULT_CONFIGMAP_PATH")
+		if defaultConfigMapPath == "" {
+			defaultConfigMapPath = DefaultConfigMapPath
+		}
+		ipxeData, err = os.ReadFile(path.Join(defaultConfigMapPath, part))
 		if err != nil {
 			log.Printf("Problem with default secret and configmap #%v ", err)
 			return nil, err

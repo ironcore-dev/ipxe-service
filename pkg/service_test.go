@@ -1,184 +1,169 @@
 package pkg
 
 import (
+	"context"
+	"fmt"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"net/http"
 	"net/http/httptest"
-	"testing"
+	"os"
 )
 
-// TODO fix tests
-func TestGetChainHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/ipxe", nil)
-	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
-	if err != nil {
-		t.Fatal(err)
-	}
+var _ = Describe("iPXE service without test data", func() {
+	Context("Default", func() {
+		It("Chain ", func() {
+			req, err := http.NewRequest("GET", "/ipxe", nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP1)
+			Expect(err).ToNot(HaveOccurred())
 
-	conf := GetConf()
-	k8sClient := NewK8sClient()
-	ipxe := IPXE{
-		Config:    conf,
-		K8sClient: k8sClient,
-	}
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
 
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getChainDefault)
-	handler.ServeHTTP(rr, req)
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusOK))
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+			expected, err := os.ReadFile("../config/samples/ipxe-default-cm/ipxe")
+			Expect(err).ToNot(HaveOccurred())
 
-	expected := `#!ipxe
-set base-url http://45.86.152.1/ipxe
-kernel ${base-url}/rootfs.vmlinuz initrd=rootfs.initrd gl.ovl=/:tmpfs gl.url=${base-url}/root.squashfs gl.live=1 ip=dhcp console=ttyS1,115200n8 console=tty0 earlyprintk=ttyS1,115200n8 consoleblank=0 ignition.firstboot=1 ignition.config.url=${base-url}/ip${net0/ip}/ignition.json ignition.platform.id=metal
-initrd ${base-url}/rootfs.initrd
-boot
-`
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
-}
+			By("Expect successful iPXE default response")
+			Expect(rr.Body.String()).Should(BeIdenticalTo(string(expected)))
+		})
 
-func TestIgnitionHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/ignition", nil)
-	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
-	if err != nil {
-		t.Fatal(err)
-	}
+		It("Chain with bad uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ipxe/%s/boot", badUUID), nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP1)
+			Expect(err).ToNot(HaveOccurred())
 
-	conf := GetConf()
-	k8sClient := NewK8sClient()
-	ipxe := IPXE{
-		Config:    conf,
-		K8sClient: k8sClient,
-	}
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
 
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
-	handler.ServeHTTP(rr, req)
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusInternalServerError))
+		})
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+		It("Ignition with bad uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ignition/%s/default", badUUID), nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP1)
+			Expect(err).ToNot(HaveOccurred())
 
-	expected := `{"ignition":{"version":"3.2.0"},"passwd":{"users":[{"name":"core","sshAuthorizedKeys":["ssh-rsa AAAA"]}]}}`
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
-}
-func TestIgnition204Handler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/ignition", nil)
-	req.Header.Set("X-FORWARDED-FOR", "127.0.0.100")
-	if err != nil {
-		t.Fatal(err)
-	}
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
 
-	conf := GetConf()
-	k8sClient := NewK8sClient()
-	ipxe := IPXE{
-		Config:    conf,
-		K8sClient: k8sClient,
-	}
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusInternalServerError))
+		})
+	})
+})
 
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
-	handler.ServeHTTP(rr, req)
+var _ = Describe("iPXE service with test data", func() {
+	Context("Access", func() {
+		ctx := context.Background()
+		SetupTestData(ctx)
 
-	if status := rr.Code; status != http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusInternalServerError)
-	}
+		It("Ignition with valid ip and bad uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ignition/%s/default", badUUID), nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP1)
+			Expect(err).ToNot(HaveOccurred())
 
-	expected := `Not found ipam ip obj
-`
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
-			rr.Body.String(), expected)
-	}
-}
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
 
-func TestIgnPartHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/ignition/testpart", nil)
-	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
-	if err != nil {
-		t.Fatal(err)
-	}
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusInternalServerError))
+		})
 
-	conf := GetConf()
-	k8sClient := NewK8sClient()
-	ipxe := IPXE{
-		Config:    conf,
-		K8sClient: k8sClient,
-	}
+		It("Ignition with valid ip and uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ignition/%s/default", uuid), nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP1)
+			Expect(err).ToNot(HaveOccurred())
 
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
-	handler.ServeHTTP(rr, req)
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusOK))
 
-	expected := `{"ignition":{"version":"3.2.0"},"passwd":{"users":[{"name":"testuser","sshAuthorizedKeys":["ssh-rsa TTTT"]}]}}`
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
-}
-func TestIgnSecretPartHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/ignition/fromsecret", nil)
-	req.Header.Set("X-FORWARDED-FOR", "127.0.0.1")
-	if err != nil {
-		t.Fatal(err)
-	}
+			expected, err := os.ReadFile("../config/samples/ignition/f2175eb4-e203-11ec-b5d5-3a68dd76b473.ign")
+			Expect(err).ToNot(HaveOccurred())
 
-	conf := GetConf()
-	k8sClient := NewK8sClient()
-	ipxe := IPXE{
-		Config:    conf,
-		K8sClient: k8sClient,
-	}
+			By("Expect successful iPXE response")
+			Expect(rr.Body.String()).Should(BeIdenticalTo(string(expected)))
+		})
 
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ipxe.getIgnitionByUUID)
-	handler.ServeHTTP(rr, req)
+		It("Ignition with valid ip and empty inventory uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ignition/%s/default", emptyInventoryUUID), nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP2)
+			Expect(err).ToNot(HaveOccurred())
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
 
-	expected := `{"ignition":{"version":"3.2.0"},"storage":{"files":[{"overwrite":true,"path":"/root/install.sh","contents":{"source":"http://45.86.152.1/install-kubernetes-from-scratch.sh"},"mode":493},{"overwrite":true,"path":"/etc/init.d/helper.sh","contents":{"compression":"gzip","source":"data:;base64,H4sIAAAAAAAC/6SOP0/DMBDFd3+Kh/GQVHKOdGFAqcSAxAIMsFGQUvtCLLlOiB0qpHx41JZUFSvb6f2537u8oDEOtHGBOHxhU8dWCM915FhJlX0M3EN7yPun55fH24e7SoKGMVD8jom3lgIn19CxQItcil3rPOMVKmPTdpDq6ElM2Blon0P7hCXebmA7AQD/oe370TP3KIXtAou2iynUW65UZuqEXzomrA/ZA+H8/WzEbkiYMAb3CW3+yql2HjqUJ92MCdpW0M0yFyKyhXaQ9F4ur4uroizKYkFWgjgZ2k+Koh9cSA3kKQE1b4XK5jNfB4nV6rz4EwAA//8Mpfu4ogEAAA=="},"mode":493}]},"systemd":{"units":[{"dropins":[{"contents":"[Service]\nExecStartPost=/etc/init.d/helper.sh\n","name":"updatehosts.conf"}],"enabled":true,"name":"systemd-hostnamed.service"}]}}`
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
-}
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusOK))
 
-func TestRoot200Handler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+			expected, err := os.ReadFile("../config/samples/ignition/94925a7e-d7e8-11ec-9bb5-3a68dd71f463.ign")
+			Expect(err).ToNot(HaveOccurred())
 
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(ok200)
-	handler.ServeHTTP(rr, req)
+			By("Expect successful iPXE response")
+			Expect(rr.Body.String()).Should(BeIdenticalTo(string(expected)))
+		})
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusInternalServerError)
-	}
+		It("Chain with valid emtpy inventory uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ipxe/%s/boot", emptyInventoryUUID), nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP1)
+			Expect(err).ToNot(HaveOccurred())
 
-	expected := "ok\n"
-	if rr.Body.String() != expected {
-		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
-			rr.Body.String(), expected)
-	}
-}
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
+
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusOK))
+
+			expected, err := os.ReadFile("../config/samples/ipxe-default-cm/boot")
+			Expect(err).ToNot(HaveOccurred())
+
+			By("Expect successful iPXE response")
+			Expect(rr.Body.String()).Should(BeIdenticalTo(string(expected)))
+		})
+
+		It("Chain with valid uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ipxe/%s/boot", uuid), nil)
+			req.Header.Set("X-FORWARDED-FOR", validIP1)
+			Expect(err).ToNot(HaveOccurred())
+
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
+
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusOK))
+
+			expected, err := os.ReadFile("../config/samples/configmap/ipxe-f2175eb4-e203-11ec-b5d5-3a68dd76b473")
+			Expect(err).ToNot(HaveOccurred())
+
+			By("Expect successful iPXE response")
+			Expect(rr.Body.String()).Should(BeIdenticalTo(string(expected)))
+		})
+
+		It("Chain with bad ip and valid uuid", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/ipxe/%s/boot", uuid), nil)
+			req.Header.Set("X-FORWARDED-FOR", badIP)
+			Expect(err).ToNot(HaveOccurred())
+
+			rr := httptest.NewRecorder()
+			rtr := ipxe.getRouter()
+			handler := http.Handler(rtr)
+			handler.ServeHTTP(rr, req)
+
+			Expect(rr.Code).Should(BeNumerically("==", http.StatusInternalServerError))
+		})
+	})
+})

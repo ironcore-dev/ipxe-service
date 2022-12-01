@@ -1,0 +1,44 @@
+variant: fcos
+version: 1.3.0
+ignition:
+  config:
+    merge:
+      - source: http://ipxe-service/ignition/{{ .UUID }}/passwd
+      - source: http://ipxe-service/ignition/{{ .UUID }}/utils
+      - source: http://ipxe-service/ignition/{{ .UUID }}/inventory
+storage:
+  files:
+    - path: /etc/hostname
+      overwrite: yes
+      mode: 0644
+      contents:
+        inline: |
+          {{ .Hostname }}
+    - path: /etc/systemd/network/en.network
+      overwrite: yes
+      mode: 0644
+      contents:
+        inline: |
+          [Match]
+          Name=en*
+
+          [Network]
+          DHCP=ipv6
+          IPv6AcceptRA=yes
+          LLDP=true
+          EmitLLDP=true
+
+          [DHCPv6]
+          UseDomains=true
+    - path: /etc/resolv.conf
+      overwrite: yes
+      mode: 0644
+      contents:
+        inline: |
+          nameserver 2001:4860:4860::8888
+          nameserver 2001:4860:4860::8844
+    - overwrite: true
+      path: "/opt/kubeconfig"
+      contents:
+        inline: |+
+          {{ .Kubeconfig | indent 10 | trim }}

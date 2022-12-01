@@ -1,0 +1,1591 @@
+apiVersion: machine.onmetal.de/v1alpha1
+kind: Inventory
+metadata:
+  labels:
+    machine.onmetal.de/mac-address-08c0eba29904: ''
+    machine.onmetal.de/mac-address-08c0eba29905: ''
+    machine.onmetal.de/size-compute-metal: 'true'
+    machine.onmetal.de/size-machine: 'true'
+  name: f2175eb4-e203-11ec-b5d5-3a68dd76b473
+  namespace: metal-api-system
+spec:
+  blocks:
+    - model: SSDPF2KE016T9L
+      name: nvme0n1
+      partitionTable:
+        partitions:
+          - id: 5C907954-4BB6-4F2E-A278-3DC940EC14A3
+            size: 1546633158144
+          - id: 8CEFAA63-2B85-4F22-AC81-86D1566CA4CD
+            size: 53687091200
+        type: GPT
+      rotational: false
+      size: 1600321314816
+      type: NVMe
+    - model: SSDPF2KE016T9L
+      name: nvme1n1
+      rotational: false
+      size: 1600321314816
+      type: NVMe
+    - model: /mnt/VM0/test3.i
+      name: sr0
+      rotational: true
+      size: 1073741312
+      system: XCC
+      type: CD-ROM
+  cpus:
+    - addressSizes: 46 bits physical, 57 bits virtual
+      bogoMips: '4200'
+      bugs:
+        - eibrs_pbrsb
+        - mmio_stale_data
+        - spec_store_bypass
+        - spectre_v1
+        - spectre_v2
+        - swapgs
+      cacheAlignment: 64
+      cacheSize: 36864 KB
+      clFlushSize: 64
+      cores: 24
+      cpuIdLevel: 27
+      family: '6'
+      flags:
+        - 3dnowprefetch
+        - abm
+        - acpi
+        - adx
+        - aes
+        - aperfmperf
+        - apic
+        - arat
+        - arch_capabilities
+        - arch_perfmon
+        - art
+        - avx
+        - avx2
+        - avx512_bitalg
+        - avx512_vbmi2
+        - avx512_vnni
+        - avx512_vpopcntdq
+        - avx512bw
+        - avx512cd
+        - avx512dq
+        - avx512f
+        - avx512ifma
+        - avx512vbmi
+        - avx512vl
+        - bmi1
+        - bmi2
+        - bts
+        - cat_l3
+        - clflush
+        - clflushopt
+        - clwb
+        - cmov
+        - constant_tsc
+        - cpuid
+        - cpuid_fault
+        - cqm
+        - cqm_llc
+        - cqm_mbm_local
+        - cqm_mbm_total
+        - cqm_occup_llc
+        - cx16
+        - cx8
+        - dca
+        - de
+        - ds_cpl
+        - dtes64
+        - dtherm
+        - dts
+        - epb
+        - ept
+        - ept_ad
+        - erms
+        - est
+        - f16c
+        - flexpriority
+        - flush_l1d
+        - fma
+        - fpu
+        - fsgsbase
+        - fsrm
+        - fxsr
+        - gfni
+        - ht
+        - hwp_epp
+        - ibpb
+        - ibrs
+        - ibrs_enhanced
+        - ida
+        - intel_ppin
+        - intel_pt
+        - invpcid
+        - invpcid_single
+        - lahf_lm
+        - lm
+        - mba
+        - mca
+        - mce
+        - md_clear
+        - mmx
+        - monitor
+        - movbe
+        - msr
+        - mtrr
+        - nonstop_tsc
+        - nopl
+        - nx
+        - ospke
+        - pae
+        - pat
+        - pbe
+        - pcid
+        - pclmulqdq
+        - pconfig
+        - pdcm
+        - pdpe1gb
+        - pebs
+        - pge
+        - pku
+        - pln
+        - pni
+        - popcnt
+        - pse
+        - pse36
+        - pts
+        - rdpid
+        - rdrand
+        - rdseed
+        - rdt_a
+        - rdtscp
+        - rep_good
+        - sdbg
+        - sep
+        - sha_ni
+        - smap
+        - smep
+        - smx
+        - split_lock_detect
+        - ss
+        - ssbd
+        - sse
+        - sse2
+        - sse4_1
+        - sse4_2
+        - ssse3
+        - stibp
+        - syscall
+        - tm
+        - tm2
+        - tme
+        - tpr_shadow
+        - tsc
+        - tsc_adjust
+        - tsc_deadline_timer
+        - umip
+        - vaes
+        - vme
+        - vmx
+        - vnmi
+        - vpclmulqdq
+        - vpid
+        - wbnoinvd
+        - x2apic
+        - xgetbv1
+        - xsave
+        - xsavec
+        - xsaveopt
+        - xsaves
+        - xtopology
+        - xtpr
+      fpu: true
+      fpuException: true
+      logicalIds:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        - 20
+        - 21
+        - 22
+        - 23
+        - 48
+        - 49
+        - 50
+        - 51
+        - 52
+        - 53
+        - 54
+        - 55
+        - 56
+        - 57
+        - 58
+        - 59
+        - 60
+        - 61
+        - 62
+        - 63
+        - 64
+        - 65
+        - 66
+        - 67
+        - 68
+        - 69
+        - 70
+        - 71
+      mhz: '2100'
+      microcode: '0xd000331'
+      model: '106'
+      modelName: Intel(R) Xeon(R) Gold 5318S CPU @ 2.10GHz
+      siblings: 48
+      stepping: '6'
+      vendorId: GenuineIntel
+      vmxFlags:
+        - apicv
+        - ept
+        - ept_1gb
+        - ept_ad
+        - ept_mode_based_exec
+        - ept_x_only
+        - flexpriority
+        - invvpid
+        - mtf
+        - ple
+        - pml
+        - posted_intr
+        - preemption_timer
+        - shadow_vmcs
+        - tsc_offset
+        - tsc_scaling
+        - unrestricted_guest
+        - vapic
+        - vapic_reg
+        - vid
+        - vnmi
+        - vpid
+        - vtpr
+      wp: true
+    - addressSizes: 46 bits physical, 57 bits virtual
+      bogoMips: 4201580m
+      bugs:
+        - eibrs_pbrsb
+        - mmio_stale_data
+        - spec_store_bypass
+        - spectre_v1
+        - spectre_v2
+        - swapgs
+      cacheAlignment: 64
+      cacheSize: 36864 KB
+      clFlushSize: 64
+      cores: 24
+      cpuIdLevel: 27
+      family: '6'
+      flags:
+        - 3dnowprefetch
+        - abm
+        - acpi
+        - adx
+        - aes
+        - aperfmperf
+        - apic
+        - arat
+        - arch_capabilities
+        - arch_perfmon
+        - art
+        - avx
+        - avx2
+        - avx512_bitalg
+        - avx512_vbmi2
+        - avx512_vnni
+        - avx512_vpopcntdq
+        - avx512bw
+        - avx512cd
+        - avx512dq
+        - avx512f
+        - avx512ifma
+        - avx512vbmi
+        - avx512vl
+        - bmi1
+        - bmi2
+        - bts
+        - cat_l3
+        - clflush
+        - clflushopt
+        - clwb
+        - cmov
+        - constant_tsc
+        - cpuid
+        - cpuid_fault
+        - cqm
+        - cqm_llc
+        - cqm_mbm_local
+        - cqm_mbm_total
+        - cqm_occup_llc
+        - cx16
+        - cx8
+        - dca
+        - de
+        - ds_cpl
+        - dtes64
+        - dtherm
+        - dts
+        - epb
+        - ept
+        - ept_ad
+        - erms
+        - est
+        - f16c
+        - flexpriority
+        - flush_l1d
+        - fma
+        - fpu
+        - fsgsbase
+        - fsrm
+        - fxsr
+        - gfni
+        - ht
+        - hwp_epp
+        - ibpb
+        - ibrs
+        - ibrs_enhanced
+        - ida
+        - intel_ppin
+        - intel_pt
+        - invpcid
+        - invpcid_single
+        - lahf_lm
+        - lm
+        - mba
+        - mca
+        - mce
+        - md_clear
+        - mmx
+        - monitor
+        - movbe
+        - msr
+        - mtrr
+        - nonstop_tsc
+        - nopl
+        - nx
+        - ospke
+        - pae
+        - pat
+        - pbe
+        - pcid
+        - pclmulqdq
+        - pconfig
+        - pdcm
+        - pdpe1gb
+        - pebs
+        - pge
+        - pku
+        - pln
+        - pni
+        - popcnt
+        - pse
+        - pse36
+        - pts
+        - rdpid
+        - rdrand
+        - rdseed
+        - rdt_a
+        - rdtscp
+        - rep_good
+        - sdbg
+        - sep
+        - sha_ni
+        - smap
+        - smep
+        - smx
+        - split_lock_detect
+        - ss
+        - ssbd
+        - sse
+        - sse2
+        - sse4_1
+        - sse4_2
+        - ssse3
+        - stibp
+        - syscall
+        - tm
+        - tm2
+        - tme
+        - tpr_shadow
+        - tsc
+        - tsc_adjust
+        - tsc_deadline_timer
+        - umip
+        - vaes
+        - vme
+        - vmx
+        - vnmi
+        - vpclmulqdq
+        - vpid
+        - wbnoinvd
+        - x2apic
+        - xgetbv1
+        - xsave
+        - xsavec
+        - xsaveopt
+        - xsaves
+        - xtopology
+        - xtpr
+      fpu: true
+      fpuException: true
+      logicalIds:
+        - 24
+        - 25
+        - 26
+        - 27
+        - 28
+        - 29
+        - 30
+        - 31
+        - 32
+        - 33
+        - 34
+        - 35
+        - 36
+        - 37
+        - 38
+        - 39
+        - 40
+        - 41
+        - 42
+        - 43
+        - 44
+        - 45
+        - 46
+        - 47
+        - 72
+        - 73
+        - 74
+        - 75
+        - 76
+        - 77
+        - 78
+        - 79
+        - 80
+        - 81
+        - 82
+        - 83
+        - 84
+        - 85
+        - 86
+        - 87
+        - 88
+        - 89
+        - 90
+        - 91
+        - 92
+        - 93
+        - 94
+        - 95
+      mhz: '2100'
+      microcode: '0xd000331'
+      model: '106'
+      modelName: Intel(R) Xeon(R) Gold 5318S CPU @ 2.10GHz
+      physicalId: 1
+      siblings: 48
+      stepping: '6'
+      vendorId: GenuineIntel
+      vmxFlags:
+        - apicv
+        - ept
+        - ept_1gb
+        - ept_ad
+        - ept_mode_based_exec
+        - ept_x_only
+        - flexpriority
+        - invvpid
+        - mtf
+        - ple
+        - pml
+        - posted_intr
+        - preemption_timer
+        - shadow_vmcs
+        - tsc_offset
+        - tsc_scaling
+        - unrestricted_guest
+        - vapic
+        - vapic_reg
+        - vid
+        - vnmi
+        - vpid
+        - vtpr
+      wp: true
+  distro: {}
+  host:
+    name: f2175eb4-e203-11ec-b5d5-3a68dd76b473
+  ipmis:
+    - ipAddress: 192.168.8.11
+      macAddress: 38:68:dd:76:b4:71
+  memory:
+    total: 1081842454528
+  nics:
+    - lldps:
+        - capabilities:
+            - Router
+          chassisId: b0:4f:13:86:7b:20
+          portDescription: mdb3-compute4
+          portId: Ethernet11
+          systemDescription: >-
+            SONiC Software Version: SONiC.4.0.2-Enterprise_Advanced - HwSku:
+            DellEMC-S5232f-C32 - Distribution: Debian 10.12 - Kernel:
+            4.19.0-9-2-amd64
+          systemName: mdb3-inb-edgeleaf1
+      macAddress: 08:c0:eb:a2:99:04
+      mtu: 1500
+      name: ens4f0np0
+      ndps:
+        - ipAddress: fe80::b24f:13ff:fe86:7b22
+          macAddress: b0:4f:13:86:7b:22
+          state: Reachable
+      pciAddress: '0000:17:00.0'
+      speed: 25000
+    - lldps:
+        - capabilities:
+            - Router
+          chassisId: b0:4f:13:83:a3:20
+          portDescription: mdb3-compute4
+          portId: Ethernet11
+          systemDescription: >-
+            SONiC Software Version: SONiC.4.0.2-Enterprise_Advanced - HwSku:
+            DellEMC-S5232f-C32 - Distribution: Debian 10.12 - Kernel:
+            4.19.0-9-2-amd64
+          systemName: mdb3-inb-edgeleaf2
+      macAddress: 08:c0:eb:a2:99:05
+      mtu: 1500
+      name: ens4f1np1
+      ndps:
+        - ipAddress: fe80::b24f:13ff:fe83:a322
+          macAddress: b0:4f:13:83:a3:22
+          state: Reachable
+      pciAddress: '0000:17:00.1'
+      speed: 25000
+  numa:
+    - cpus:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        - 20
+        - 21
+        - 22
+        - 23
+        - 48
+        - 49
+        - 50
+        - 51
+        - 52
+        - 53
+        - 54
+        - 55
+        - 56
+        - 57
+        - 58
+        - 59
+        - 60
+        - 61
+        - 62
+        - 63
+        - 64
+        - 65
+        - 66
+        - 67
+        - 68
+        - 69
+        - 70
+        - 71
+      distances:
+        - 10
+        - 20
+      id: 0
+      memory:
+        total: 540692127744
+    - cpus:
+        - 24
+        - 25
+        - 26
+        - 27
+        - 28
+        - 29
+        - 30
+        - 31
+        - 32
+        - 33
+        - 34
+        - 35
+        - 36
+        - 37
+        - 38
+        - 39
+        - 40
+        - 41
+        - 42
+        - 43
+        - 44
+        - 45
+        - 46
+        - 47
+        - 72
+        - 73
+        - 74
+        - 75
+        - 76
+        - 77
+        - 78
+        - 79
+        - 80
+        - 81
+        - 82
+        - 83
+        - 84
+        - 85
+        - 86
+        - 87
+        - 88
+        - 89
+        - 90
+        - 91
+        - 92
+        - 93
+        - 94
+        - 95
+      distances:
+        - 20
+        - 10
+      id: 1
+      memory:
+        total: 541150326784
+  pciDevices:
+    - address: '0000:00:00.0'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a2
+        name: Ice Lake Memory Map/VT-d
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:00.1'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a4
+        name: Ice Lake Mesh 2 PCIe
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:00.2'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a3
+        name: Ice Lake RAS
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:00.4'
+      busId: '0000:00'
+      class:
+        id: '06'
+        name: Bridge
+      subclass:
+        id: '00'
+        name: Host bridge
+      type:
+        id: '0998'
+        name: Ice Lake IEH
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.0'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.1'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.2'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.3'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.4'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.5'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.6'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:01.7'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:02.0'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a6
+        name: Ice Lake MSM
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:02.1'
+      busId: '0000:00'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a7
+        name: Ice Lake PMON MSM
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:02.4'
+      busId: '0000:00'
+      class:
+        id: '13'
+        name: Non-Essential Instrumentation
+      type:
+        id: '3456'
+        name: Ice Lake NorthPeak
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:11.0'
+      busId: '0000:00'
+      class:
+        id: ff
+        name: Unassigned class
+      type:
+        id: a1ec
+        name: C620 Series Chipset Family MROM 0
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:11.5'
+      busId: '0000:00'
+      class:
+        id: '01'
+        name: Mass storage controller
+      subclass:
+        id: '04'
+        name: RAID bus controller
+      type:
+        id: '2827'
+        name: C610/X99 series chipset sSATA Controller [RAID mode]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:14.0'
+      busId: '0000:00'
+      class:
+        id: 0c
+        name: Serial bus controller
+      interface:
+        id: '30'
+        name: XHCI
+      subclass:
+        id: '03'
+        name: USB controller
+      type:
+        id: a1af
+        name: C620 Series Chipset Family USB 3.0 xHCI Controller
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:14.2'
+      busId: '0000:00'
+      class:
+        id: '11'
+        name: Signal processing controller
+      subclass:
+        id: '80'
+        name: Signal processing controller
+      type:
+        id: a1b1
+        name: C620 Series Chipset Family Thermal Subsystem
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:16.0'
+      busId: '0000:00'
+      class:
+        id: '07'
+        name: Communication controller
+      subclass:
+        id: '80'
+        name: Communication controller
+      type:
+        id: a1ba
+        name: 'C620 Series Chipset Family MEI Controller #1'
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:16.1'
+      busId: '0000:00'
+      class:
+        id: '07'
+        name: Communication controller
+      subclass:
+        id: '80'
+        name: Communication controller
+      type:
+        id: a1bb
+        name: 'C620 Series Chipset Family MEI Controller #2'
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:16.4'
+      busId: '0000:00'
+      class:
+        id: '07'
+        name: Communication controller
+      subclass:
+        id: '80'
+        name: Communication controller
+      type:
+        id: a1be
+        name: 'C620 Series Chipset Family MEI Controller #3'
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:00:17.0'
+      busId: '0000:00'
+      class:
+        id: '01'
+        name: Mass storage controller
+      subclass:
+        id: '04'
+        name: RAID bus controller
+      type:
+        id: '2826'
+        name: C600/X79 series chipset SATA RAID Controller
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: 0000:00:1c.0
+      busId: '0000:00'
+      class:
+        id: '06'
+        name: Bridge
+      interface:
+        id: '00'
+        name: Normal decode
+      subclass:
+        id: '04'
+        name: PCI bridge
+      type:
+        id: a190
+        name: 'C620 Series Chipset Family PCI Express Root Port #1'
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: 0000:00:1f.0
+      busId: '0000:00'
+      class:
+        id: '06'
+        name: Bridge
+      subclass:
+        id: '01'
+        name: ISA bridge
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: 0000:00:1f.2
+      busId: '0000:00'
+      class:
+        id: '05'
+        name: Memory controller
+      subclass:
+        id: '80'
+        name: Memory controller
+      type:
+        id: a1a1
+        name: C620 Series Chipset Family Power Management Controller
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: 0000:00:1f.4
+      busId: '0000:00'
+      class:
+        id: 0c
+        name: Serial bus controller
+      subclass:
+        id: '05'
+        name: SMBus
+      type:
+        id: a1a3
+        name: C620 Series Chipset Family SMBus
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: 0000:00:1f.5
+      busId: '0000:00'
+      class:
+        id: 0c
+        name: Serial bus controller
+      subclass:
+        id: '80'
+        name: Serial bus controller
+      type:
+        id: a1a4
+        name: C620 Series Chipset Family SPI Controller
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:16:00.0'
+      busId: '0000:16'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a2
+        name: Ice Lake Memory Map/VT-d
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:16:00.1'
+      busId: '0000:16'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a4
+        name: Ice Lake Mesh 2 PCIe
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:16:00.2'
+      busId: '0000:16'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a3
+        name: Ice Lake RAS
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:16:00.4'
+      busId: '0000:16'
+      class:
+        id: '06'
+        name: Bridge
+      subclass:
+        id: '00'
+        name: Host bridge
+      type:
+        id: '0998'
+        name: Ice Lake IEH
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:16:02.0'
+      busId: '0000:16'
+      class:
+        id: '06'
+        name: Bridge
+      interface:
+        id: '00'
+        name: Normal decode
+      subclass:
+        id: '04'
+        name: PCI bridge
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:30:00.0'
+      busId: '0000:30'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a2
+        name: Ice Lake Memory Map/VT-d
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:30:00.1'
+      busId: '0000:30'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a4
+        name: Ice Lake Mesh 2 PCIe
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:30:00.2'
+      busId: '0000:30'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a3
+        name: Ice Lake RAS
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:30:00.4'
+      busId: '0000:30'
+      class:
+        id: '06'
+        name: Bridge
+      subclass:
+        id: '00'
+        name: Host bridge
+      type:
+        id: '0998'
+        name: Ice Lake IEH
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:00.0'
+      busId: '0000:64'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a2
+        name: Ice Lake Memory Map/VT-d
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:00.1'
+      busId: '0000:64'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a4
+        name: Ice Lake Mesh 2 PCIe
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:00.2'
+      busId: '0000:64'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a3
+        name: Ice Lake RAS
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:00.4'
+      busId: '0000:64'
+      class:
+        id: '06'
+        name: Bridge
+      subclass:
+        id: '00'
+        name: Host bridge
+      type:
+        id: '0998'
+        name: Ice Lake IEH
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:02.0'
+      busId: '0000:64'
+      class:
+        id: '06'
+        name: Bridge
+      interface:
+        id: '00'
+        name: Normal decode
+      subclass:
+        id: '04'
+        name: PCI bridge
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:03.0'
+      busId: '0000:64'
+      class:
+        id: '06'
+        name: Bridge
+      interface:
+        id: '00'
+        name: Normal decode
+      subclass:
+        id: '04'
+        name: PCI bridge
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:04.0'
+      busId: '0000:64'
+      class:
+        id: '06'
+        name: Bridge
+      interface:
+        id: '00'
+        name: Normal decode
+      subclass:
+        id: '04'
+        name: PCI bridge
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:64:05.0'
+      busId: '0000:64'
+      class:
+        id: '06'
+        name: Bridge
+      interface:
+        id: '00'
+        name: Normal decode
+      subclass:
+        id: '04'
+        name: PCI bridge
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:00.0'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a2
+        name: Ice Lake Memory Map/VT-d
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:00.1'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a4
+        name: Ice Lake Mesh 2 PCIe
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:00.2'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a3
+        name: Ice Lake RAS
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:00.4'
+      busId: '0000:80'
+      class:
+        id: '06'
+        name: Bridge
+      subclass:
+        id: '00'
+        name: Host bridge
+      type:
+        id: '0998'
+        name: Ice Lake IEH
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.0'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.1'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.2'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.3'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.4'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.5'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.6'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:01.7'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: '0b00'
+        name: Ice Lake CBDMA [QuickData Technology]
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:02.0'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a6
+        name: Ice Lake MSM
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:02.1'
+      busId: '0000:80'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a7
+        name: Ice Lake PMON MSM
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:80:02.4'
+      busId: '0000:80'
+      class:
+        id: '13'
+        name: Non-Essential Instrumentation
+      type:
+        id: '3456'
+        name: Ice Lake NorthPeak
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:97:00.0'
+      busId: '0000:97'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a2
+        name: Ice Lake Memory Map/VT-d
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:97:00.1'
+      busId: '0000:97'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a4
+        name: Ice Lake Mesh 2 PCIe
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:97:00.2'
+      busId: '0000:97'
+      class:
+        id: '08'
+        name: Generic system peripheral
+      subclass:
+        id: '80'
+        name: System peripheral
+      type:
+        id: 09a3
+        name: Ice Lake RAS
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+    - address: '0000:97:00.4'
+      busId: '0000:97'
+      class:
+        id: '06'
+        name: Bridge
+      subclass:
+        id: '00'
+        name: Host bridge
+      type:
+        id: '0998'
+        name: Ice Lake IEH
+      vendor:
+        id: '8086'
+        name: Intel Corporation
+  system:
+    id: f2175eb4-e203-11ec-b5d5-3a68dd76b473
+    manufacturer: Lenovo
+    productSku: 1271CTO1XX
+    serialNumber: W800656X
+  virt:
+    vmType: none
