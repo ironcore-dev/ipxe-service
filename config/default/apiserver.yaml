@@ -5,9 +5,9 @@ metadata:
   name: ipxe-service
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: ipam-inventory-reader
+  name: ipxe-service
 rules:
 - apiGroups:
   - ipam.onmetal.de
@@ -34,15 +34,21 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
-  name: ipxe-read-ips
+  name: ipxe-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ipam-inventory-reader
+  kind: ClusterRole
+  name: ipxe-service
 subjects:
 - kind: ServiceAccount
   name: ipxe-service
@@ -131,6 +137,8 @@ spec:
           image: "core.harbor.onmetal.de/onmetal/ipxe-service:latest"
           imagePullPolicy: Always
           env:
+            - name: ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH
+              value: go1.19
             - name: HANDLER_URL
               value: http://machine-event-handler.onmetal.svc.cluster.local/api/v1/event
           ports:

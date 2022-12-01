@@ -1,0 +1,6 @@
+#!ipxe
+
+set base-url http://ipxe-service
+chain --replace --autofree ${base-url}/ipxe/${uuid}/boot
+
+reboot

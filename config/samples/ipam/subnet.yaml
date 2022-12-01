@@ -1,0 +1,12 @@
+apiVersion: ipam.onmetal.de/v1alpha1
+kind: Subnet
+metadata:
+  labels:
+    ipam.onmetal.de/object-purpose: dhcp
+  name: dhcp
+  namespace: metal-api-system
+spec:
+  cidr: fd00:da8:fff6::/48
+  network:
+    name: dhcp
+  parentSubnet: {}

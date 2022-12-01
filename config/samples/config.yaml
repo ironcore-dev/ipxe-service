@@ -1,0 +1,6 @@
+configmap-namespace: metal-api-system
+ipam-namespace: metal-api-system
+machine-request-namespace: oob
+inventory-namespace: metal-api-system
+k8simage-namespace: oob
+disable-forward-header: false
