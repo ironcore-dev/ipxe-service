@@ -1,7 +1,7 @@
 name: Pull Request Code test
 
 on:
-  pull_request:
+  pull_request_target:
     types: [ assigned, opened, synchronize, reopened ]
     paths-ignore:
       - 'docs/**'
@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Complie manifests
         uses: azure/k8s-bake@v2.3
         with:
