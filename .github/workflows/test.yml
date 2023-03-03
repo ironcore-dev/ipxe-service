@@ -16,7 +16,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Complie manifests
-        uses: azure/k8s-bake@v2.3
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'kustomize'
           kustomizationPath: './config/default/'
