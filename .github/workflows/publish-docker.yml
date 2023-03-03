@@ -1,9 +1,6 @@
 name: Build and Publish Docker Image
 
 on:
-  release:
-    types:
-      - published
   push:
     branches:
       - main
@@ -12,7 +9,7 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
-  pull_request:
+  pull_request_target:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
@@ -22,6 +19,8 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: docker/metadata-action@v4
         id: meta
         with:
