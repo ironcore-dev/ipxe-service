@@ -53,7 +53,6 @@ func renderButane(dataIn []byte) (string, error) {
 	// render by butane to json
 	options := common.TranslateBytesOptions{
 		Raw:    true,
-		Strict: false,
 		Pretty: false,
 	}
 	options.NoResourceAutoCompression = true
