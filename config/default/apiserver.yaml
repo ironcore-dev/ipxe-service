@@ -137,8 +137,6 @@ spec:
           image: controller:latest
           imagePullPolicy: Always
           env:
-            - name: ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH
-              value: go1.19
             - name: HANDLER_URL
               value: http://machine-event-handler.onmetal.svc.cluster.local/api/v1/event
           ports:

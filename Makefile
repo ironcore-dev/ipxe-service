@@ -24,10 +24,10 @@ endif
 all: build
 
 build:
-	/usr/local/go/bin/go build -o bin/main main.go
+	go build -o bin/main main.go
 
 run:
-	/usr/local/go/bin/go run main.go
+	go run main.go
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
@@ -50,7 +50,6 @@ setup-envtest:
 .PHONY: test
 test: setup-envtest
 	KUBEBUILDER_ASSETS="$(shell $(LOCAL_TESTBIN)/setup-envtest use $(ENVTEST_K8S_VERSION) -i --bin-dir $(LOCAL_TESTBIN) -p path)" \
-	ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH=go1.19 \
 	IPXE_DEFAULT_SECRET_PATH="../config/samples/ipxe-default-secret" \
 	IPXE_DEFAULT_CONFIGMAP_PATH="../config/samples/ipxe-default-cm" \
 	go test ./... -coverprofile cover.out
