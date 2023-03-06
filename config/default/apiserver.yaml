@@ -134,7 +134,7 @@ spec:
             mountPath: /etc/ipxe-service
           securityContext:
             {}
-          image: "core.harbor.onmetal.de/onmetal/ipxe-service:latest"
+          image: controller:latest
           imagePullPolicy: Always
           env:
             - name: ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH
