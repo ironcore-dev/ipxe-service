@@ -3,8 +3,7 @@
 <img src="./docs/assets/logo.png" alt="Logo of the project" align="right">
 
 ## Status of the last deployments:
-<img src="https://github.com/onmetal/ipxe-service/workflows/DockerImage2Harbor/badge.svg?branch-master">
-<img src="https://github.com/onmetal/ipxe-service/workflows/ReleaseHelm/badge.svg?branch-master">
+[![Build and Publish Docker Image](https://github.com/onmetal/ipxe-service/actions/workflows/publish-docker.yml/badge.svg)](https://github.com/onmetal/ipxe-service/actions/workflows/publish-docker.yml)
 
 ## Overview 
 
