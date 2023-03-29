@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.18.0
 	github.com/gorilla/mux v1.8.0
-	github.com/onmetal/ipam v0.0.20
+	github.com/onmetal/ipam v0.0.21
 	github.com/onmetal/metal-api v0.8.1
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.27.5

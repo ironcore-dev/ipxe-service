@@ -266,8 +266,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRW
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
-github.com/onmetal/ipam v0.0.20 h1:g4G82Jwf1ThC5HO64VR+5kYzhaxqtKF1gm6zgSaJo6c=
-github.com/onmetal/ipam v0.0.20/go.mod h1:zHNSnnvWB2rUDJlasGabn2gV9Pa0BUtU4HYcS89X2AQ=
+github.com/onmetal/ipam v0.0.21 h1:+gkKNX+9aunNqtoE1jLZ1MFYb+wNDc8g2W2abX4yiAQ=
+github.com/onmetal/ipam v0.0.21/go.mod h1:Ug2Nlx9YvdQzEEHloBr4ErFEfSxLWBFnSdLD4TZs/58=
 github.com/onmetal/metal-api v0.8.1 h1:4hVS4Hdf9CsEY3c2WnsJjo1T4XAsP9NponjhWMJWy9M=
 github.com/onmetal/metal-api v0.8.1/go.mod h1:Z9HW4BXlMqeZ9yyvSaLaVBnYjSISb8582ZGlRDwxb8M=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
