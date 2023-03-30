@@ -9,7 +9,7 @@ require (
 	github.com/onmetal/ipam v0.0.21
 	github.com/onmetal/metal-api v0.8.1
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.27.5
+	github.com/onsi/gomega v1.27.6
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
