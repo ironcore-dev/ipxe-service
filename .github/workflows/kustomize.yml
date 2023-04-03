@@ -1,0 +1,30 @@
+name: Pull Request Deploy test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+    paths:
+      - 'config/**'
+  pull_request_target:
+    paths-ignore:
+      - 'config/**'
+
+jobs:
+  kustomize-test:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Complie manifests
+        uses: azure/k8s-bake@v2.4
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: './config/default/'
+          kubectl-version: 'latest'
+          silent: 'false'

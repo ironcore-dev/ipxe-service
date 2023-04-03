@@ -1,30 +1,23 @@
 name: Pull Request Code test
 
 on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+    paths-ignore:
+      - '**.md'
+      - 'deploy/**'
   pull_request_target:
-    types: [ assigned, opened, synchronize, reopened ]
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
 
 jobs:
-  kustomize-test:
-    runs-on: [ self-hosted, Linux, X64 ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Complie manifests
-        uses: azure/k8s-bake@v2.4
-        with:
-          renderEngine: 'kustomize'
-          kustomizationPath: './config/default/'
-          kubectl-version: 'latest'
-          silent: 'false'
-  checks:
-    name: run
-    runs-on: ubuntu-latest
+  run:
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
         with:
@@ -36,4 +29,5 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.BOT_PRIVATE_KEY }}
       - run: ./hack/setup-git-redirect.sh
+      - run: make build
       - run: make test
