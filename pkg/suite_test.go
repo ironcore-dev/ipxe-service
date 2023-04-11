@@ -19,13 +19,14 @@ package pkg
 import (
 	"bytes"
 	"context"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/yaml"
 	"os"
 	"path/filepath"
 	"testing"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/yaml"
 
 	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
 	inventoriesv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
@@ -113,7 +114,7 @@ var _ = BeforeSuite(func() {
 	err = ipxe.K8sClient.Client.Create(ctx, ns)
 	Expect(err).NotTo(HaveOccurred(), "failed to create metal-api-system Namespace")
 
-}, 60)
+})
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
