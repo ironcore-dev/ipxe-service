@@ -13,9 +13,9 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.15.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
-	k8s.io/api v0.26.3
+	k8s.io/api v0.27.0
 	k8s.io/apimachinery v0.27.0
-	k8s.io/client-go v0.26.3
+	k8s.io/client-go v0.27.0
 	sigs.k8s.io/controller-runtime v0.14.6
 )
 
@@ -64,7 +64,6 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
