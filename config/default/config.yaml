@@ -1,6 +1,5 @@
-configmap-namespace: oob
-ipam-namespace: oob
-machine-request-namespace: oob
-inventory-namespace: oob
-k8simage-namespace: oob
-
+configmap-namespace: default
+ipam-namespace: default
+machine-request-namespace: default
+inventory-namespace: default
+k8simage-namespace: default

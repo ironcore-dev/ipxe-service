@@ -1,4 +1,4 @@
 #!ipxe
 
-chain --replace --autofree http://192.168.10.3/ipxe/boot.ipxe
+chain --replace --autofree http://[2001:DB8::1]/ipxe/boot.ipxe
 
