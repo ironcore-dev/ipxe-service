@@ -5,7 +5,7 @@ go 1.21.0
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.19.0
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/onmetal/ipam v0.0.25
 	github.com/onmetal/metal-api v0.10.3
 	github.com/onsi/ginkgo/v2 v2.13.0
