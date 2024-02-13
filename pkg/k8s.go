@@ -3,12 +3,13 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"k8s.io/client-go/rest"
 	"log"
 	"net"
 	"os"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strings"
+
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
 	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
@@ -108,7 +109,7 @@ func (k K8sClient) getMacFromIP(clientIP, namespace string) (string, error) {
 	err := k.Client.List(context.Background(),
 		&ips,
 		client.InNamespace(namespace),
-		client.MatchingLabels{"ip": strings.ReplaceAll(clientIP, ":", "_")})
+		client.MatchingLabels{"ip": strings.ReplaceAll(clientIP, ":", "-")})
 	if err != nil {
 		err = errors.Wrapf(err, "Failed to list IPAM IPs in namespace %s", namespace)
 		return "", err
