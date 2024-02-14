@@ -11,7 +11,7 @@ import (
 
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
-	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
+	inventoryv1alpha4 "github.com/ironcore-dev/metal/apis/metal/v1alpha4"
 	"github.com/pkg/errors"
 )
 
@@ -88,7 +88,7 @@ func readIpxeConfFile(part string) ([]byte, error) {
 	return ipxeData, nil
 }
 
-func checkInventoryMac(inventory *inventoryv1alpha1.Inventory, mac string) error {
+func checkInventoryMac(inventory *inventoryv1alpha4.Inventory, mac string) error {
 
 	uuid := ""
 	if inventory.Spec.System != nil && inventory.Spec.System.ID != "" {

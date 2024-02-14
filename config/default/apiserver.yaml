@@ -27,7 +27,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - machine.onmetal.de
+  - metal.ironcore.dev
   resources:
   - inventories
   verbs:
