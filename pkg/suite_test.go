@@ -28,8 +28,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
 
+	inventoryv1alpha4 "github.com/ironcore-dev/metal/apis/metal/v1alpha4"
 	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
-	inventoriesv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -77,7 +77,14 @@ var _ = BeforeSuite(func() {
 		ErrorIfCRDPathMissing: true,
 	}
 
-	inventoriesv1alpha1.SchemeBuilder.Register(&inventoriesv1alpha1.Inventory{}, &inventoriesv1alpha1.InventoryList{})
+	inventoryv1alpha4.SchemeBuilder.Register(func(scheme *runtime.Scheme) error {
+		scheme.AddKnownTypes(inventoryv1alpha4.SchemeGroupVersion,
+			&inventoryv1alpha4.Inventory{},
+			&inventoryv1alpha4.InventoryList{},
+		)
+		return nil
+	})
+
 	ipamv1alpha1.SchemeBuilder.Register(
 		&ipamv1alpha1.Network{},
 		&ipamv1alpha1.NetworkList{},
@@ -92,7 +99,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cfg).ToNot(BeNil())
 
-	Expect(inventoriesv1alpha1.AddToScheme(scheme)).NotTo(HaveOccurred())
+	Expect(inventoryv1alpha4.AddToScheme(scheme)).NotTo(HaveOccurred())
 	Expect(ipamv1alpha1.AddToScheme(scheme)).NotTo(HaveOccurred())
 	Expect(corev1.AddToScheme(scheme)).NotTo(HaveOccurred())
 
@@ -155,17 +162,17 @@ func SetupTestData(ctx context.Context) {
 
 	inventoryYaml, err := os.ReadFile("../config/samples/inventory/f2175eb4-e203-11ec-b5d5-3a68dd76b473.yaml")
 	Expect(err).NotTo(HaveOccurred())
-	inventory := &inventoriesv1alpha1.Inventory{}
+	inventory := &inventoryv1alpha4.Inventory{}
 	err = yaml.NewYAMLOrJSONDecoder(bytes.NewReader(inventoryYaml), 100).Decode(inventory)
 	Expect(err).NotTo(HaveOccurred())
 
-	emptyInventory := &inventoriesv1alpha1.Inventory{
+	emptyInventory := &inventoryv1alpha4.Inventory{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      emptyInventoryUUID,
 			Namespace: namespace,
 		},
-		Spec: inventoriesv1alpha1.InventorySpec{
-			Host: &inventoriesv1alpha1.HostSpec{
+		Spec: inventoryv1alpha4.InventorySpec{
+			Host: &inventoryv1alpha4.HostSpec{
 				Name: "",
 			},
 		},

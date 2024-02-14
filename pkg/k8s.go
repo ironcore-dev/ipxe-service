@@ -11,8 +11,8 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
+	inventoryv1alpha4 "github.com/ironcore-dev/metal/apis/metal/v1alpha4"
 	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
-	inventoryv1alpha1 "github.com/onmetal/metal-api/apis/inventory/v1alpha1"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,11 +28,11 @@ type K8sClient struct {
 }
 
 func NewK8sClient(cfg *rest.Config, options client.Options) K8sClient {
-	if err := inventoryv1alpha1.AddToScheme(scheme.Scheme); err != nil {
+	if err := inventoryv1alpha4.AddToScheme(scheme.Scheme); err != nil {
 		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
 	}
 	if err := ipamv1alpha1.AddToScheme(scheme.Scheme); err != nil {
-		log.Fatal("Unable to add registered types inventory to client scheme: ", err)
+		log.Fatal("Unable to add registered types ipam to client scheme: ", err)
 	}
 
 	if cfg == nil {
@@ -132,9 +132,9 @@ func (k K8sClient) getMacFromIP(clientIP, namespace string) (string, error) {
 	return mac, nil
 }
 
-func (k K8sClient) getInventory(uuid, namespace string) (*inventoryv1alpha1.Inventory, error) {
+func (k K8sClient) getInventory(uuid, namespace string) (*inventoryv1alpha4.Inventory, error) {
 
-	inventory := &inventoryv1alpha1.Inventory{
+	inventory := &inventoryv1alpha4.Inventory{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      uuid,
 			Namespace: namespace,
