@@ -8,5 +8,5 @@ const (
 	ServiceServerCert       = "ipxe-service-server-cert"
 	DefaultSecretPath       = "/etc/ipxe-default-secret"
 	DefaultConfigMapPath    = "/etc/ipxe-default-cm"
-	InventoryMacLabelPrefix = "machine.onmetal.de/mac-address-"
+	InventoryMacLabelPrefix = "metal.ironcore.dev/mac-address-"
 )
