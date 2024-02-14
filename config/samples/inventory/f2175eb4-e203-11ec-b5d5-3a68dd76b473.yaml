@@ -2,8 +2,8 @@ apiVersion: machine.onmetal.de/v1alpha1
 kind: Inventory
 metadata:
   labels:
-    machine.onmetal.de/mac-address-08c0eba29904: ''
-    machine.onmetal.de/mac-address-08c0eba29905: ''
+    metal.ironcore.dev/mac-address-08c0eba29904: ''
+    metal.ironcore.dev/mac-address-08c0eba29905: ''
     machine.onmetal.de/size-compute-metal: 'true'
     machine.onmetal.de/size-machine: 'true'
   name: f2175eb4-e203-11ec-b5d5-3a68dd76b473
