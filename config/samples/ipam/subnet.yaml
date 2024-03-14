@@ -1,8 +1,8 @@
-apiVersion: ipam.onmetal.de/v1alpha1
+apiVersion: ipam.metal.ironcore.dev/v1alpha1
 kind: Subnet
 metadata:
   labels:
-    ipam.onmetal.de/object-purpose: dhcp
+    ipam.metal.ironcore.dev/object-purpose: dhcp
   name: dhcp
   namespace: metal-api-system
 spec:

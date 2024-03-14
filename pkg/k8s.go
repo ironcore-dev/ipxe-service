@@ -11,8 +11,8 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
+	ipamv1alpha1 "github.com/ironcore-dev/ipam/api/ipam/v1alpha1"
 	inventoryv1alpha4 "github.com/ironcore-dev/metal/apis/metal/v1alpha4"
-	ipamv1alpha1 "github.com/onmetal/ipam/api/v1alpha1"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
