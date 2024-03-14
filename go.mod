@@ -5,6 +5,7 @@ go 1.22
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.20.0
+	github.com/google/addlicense v1.1.1
 	github.com/gorilla/mux v1.8.1
 	github.com/ironcore-dev/ipam v0.2.0
 	github.com/ironcore-dev/metal v0.11.2
@@ -17,6 +18,7 @@ require (
 	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.2
 	sigs.k8s.io/controller-runtime v0.17.2
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20240313184151-cb5107b36b64
 )
 
 require (
@@ -24,6 +26,7 @@ require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/aws/aws-sdk-go v1.47.9 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/clarketm/json v1.17.1 // indirect
 	github.com/coreos/go-json v0.0.0-20230131223807-18775e0fb4fb // indirect
@@ -63,6 +66,7 @@ require (
 	github.com/prometheus/client_model v0.6.0 // indirect
 	github.com/prometheus/common v0.49.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
@@ -73,6 +77,7 @@ require (
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
