@@ -37,9 +37,9 @@ curl http://127.0.0.1:8082
 Here's a brief intro about what a developer must do in order to start developing the project further:
 
 ```shell
-git clone https://github.com/ironcore-dev/ipxe-service.git
-cd ipxe-service/
-helm install ipxe-service ./chart
+git clone https://github.com/ironcore-dev/ipxe.git
+cd ipxe/
+helm install ipxe ./chart
 ```
 
 ## Tests
