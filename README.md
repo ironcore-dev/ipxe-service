@@ -3,7 +3,7 @@
 <img src="./docs/assets/logo.png" alt="Logo of the project" align="right">
 
 ## Status of the last deployments:
-[![Build and Publish Docker Image](https://github.com/onmetal/ipxe-service/actions/workflows/publish-docker.yml/badge.svg)](https://github.com/onmetal/ipxe-service/actions/workflows/publish-docker.yml)
+[![Build and Publish Docker Image](https://github.com/ironcore-dev/ipxe-service/actions/workflows/publish-docker.yml/badge.svg)](https://github.com/ironcore-dev/ipxe-service/actions/workflows/publish-docker.yml)
 
 ## Overview 
 

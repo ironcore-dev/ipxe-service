@@ -10,7 +10,7 @@ metadata:
   name: ipxe-service
 rules:
 - apiGroups:
-  - ipam.onmetal.de
+  - ipam.metal.ironcore.dev
   resources:
   - ips
   verbs:
