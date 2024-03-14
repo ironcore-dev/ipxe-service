@@ -2,8 +2,10 @@
 
 <img src="./docs/assets/logo.png" alt="Logo of the project" align="right">
 
-## Status of the last deployments:
-[![Build and Publish Docker Image](https://github.com/ironcore-dev/ipxe-service/actions/workflows/publish-docker.yml/badge.svg)](https://github.com/ironcore-dev/ipxe-service/actions/workflows/publish-docker.yml)
+[![REUSE status](https://api.reuse.software/badge/github.com/ironcore-dev/ipxe)](https://api.reuse.software/info/github.com/ironcore-dev/ipxe)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![Build](https://github.com/ironcore-dev/ipxe/actions/workflows/publish-docker.yml/badge.svg)](https://github.com/ironcore-dev/ipxe/actions/workflows/publish-docker.yml)
+[![GitHub License](https://img.shields.io/static/v1?label=License&message=Apache-2.0&color=blue&style=flat-square)](LICENSE)
 
 ## Overview 
 
