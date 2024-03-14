@@ -40,7 +40,7 @@ setup-envtest:
 	$(LOCAL_TESTBIN)/setup-envtest use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCAL_TESTBIN)
 
 .PHONY: test
-test: setup-envtest
+test: setup-envtest fmt vet checklicense
 	KUBEBUILDER_ASSETS="$(shell $(LOCAL_TESTBIN)/setup-envtest use $(ENVTEST_K8S_VERSION) -i --bin-dir $(LOCAL_TESTBIN) -p path)" \
 	IPXE_DEFAULT_SECRET_PATH="../config/samples/ipxe-default-secret" \
 	IPXE_DEFAULT_CONFIGMAP_PATH="../config/samples/ipxe-default-cm" \
@@ -60,3 +60,11 @@ kustomize: ## Download kustomize locally if necessary.
 install: kustomize ## Install services into the K8s cluster specified in ~/.kube/config. This requires IMG to be available for the cluster.
 	#cd config/default/server && $(KUSTOMIZE) edit set image apiserver=${IMG}
 	kubectl apply -k config/default
+
+.PHONY: addlicense
+addlicense: ## Add license headers to all go files.
+	find . -name '*.go' -exec go run github.com/google/addlicense -f hack/license-header.txt {} +
+
+.PHONY: checklicense
+checklicense: ## Check that every file has a license header present.
+	find . -name '*.go' -exec go run github.com/google/addlicense  -check -c 'IronCore authors' {} +

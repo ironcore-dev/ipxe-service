@@ -1,0 +1,36 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ipxe-service
+Upstream-Contact: IronCore authors <ospo@sap.com>
+Source: https://github.com/ironcore-dev/ipxe-service
+
+# --------------------------------------------------
+# source code
+
+Files:
+  .github/*
+  .gitignore
+  Dockerfile
+  Makefile
+  config/*
+  go.mod
+  go.sum
+  hack/*
+  test/*
+Copyright: 2024 SAP SE or an SAP affiliate company and IronCore contributors
+License: Apache-2.0
+
+# --------------------------------------------------
+# documentation
+
+Files:
+  docs/*
+  README.md
+Copyright: 2024 SAP SE or an SAP affiliate company and IronCore contributors
+License: Apache-2.0
+
+# --------------------------------------------------
+# source dependencies
+
+Files: utils/envtest/internal/testing/certs/certs.go
+Copyright: 2021 The Kubernetes Authors.
+License: Apache-2.0
