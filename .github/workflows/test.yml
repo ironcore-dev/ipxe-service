@@ -10,14 +10,16 @@ on:
     paths-ignore:
       - '**.md'
       - 'deploy/**'
-  pull_request_target:
+  pull_request:
+    branches:
+      - main
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
 
 jobs:
   run:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,14 +27,5 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - run: |
-          mkdir -p ~/.ssh
-          for key in rsa ecdsa ed25519; do
-            ssh-keyscan -t $key github.com 2>/dev/null >> ~/.ssh/known_hosts
-          done
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.BOT_PRIVATE_KEY }}
-      - run: ./hack/setup-git-redirect.sh
       - run: make build
       - run: make test

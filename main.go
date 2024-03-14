@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/onmetal/ipxe-service/pkg"
+
+	"github.com/ironcore-dev/ipxe-service/pkg"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
