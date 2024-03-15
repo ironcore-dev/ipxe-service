@@ -1,9 +1,0 @@
-[
-  {"op": "replace",
-   "path": "/spec/commonName",
-   "value": "ipxe-service.local.ns1.fra3.infra.onmetal.de"},
-
-  {"op": "replace",
-   "path": "/spec/dnsNames/0",
-   "value": "ipxe-service.local.ns1.fra3.infra.onmetal.de"}
-]
