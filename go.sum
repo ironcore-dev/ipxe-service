@@ -88,8 +88,8 @@ github.com/huandu/xstrings v1.3.2/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/imdario/mergo v0.3.16 h1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=
 github.com/imdario/mergo v0.3.16/go.mod h1:WBLT9ZmE3lPoWsEzCh9LPo3TiwVN+ZKEjmz+hD27ysY=
-github.com/ironcore-dev/ipam v0.2.0 h1:2iqZYK0nLWTx0jj7o/W+G3TT1WV+NXURZpRAxYbwz6A=
-github.com/ironcore-dev/ipam v0.2.0/go.mod h1:2RWFJu00UHjN9viwx4JazqVeYRrgo3plKyXCYm/V7es=
+github.com/ironcore-dev/ipam v0.2.1 h1:IKV3ojpD4xEQjd/GXxeUfEEy9jMUDPnO45zMluD0K3M=
+github.com/ironcore-dev/ipam v0.2.1/go.mod h1:okbNL8imniqLS0XiZPZBS0Wk9bb+AKjc8KYiKQD1j0A=
 github.com/ironcore-dev/metal v0.11.2 h1:1FGbc3XASJDokUNSr3tMBwcro+IPX4Y66rL7CsbxgBQ=
 github.com/ironcore-dev/metal v0.11.2/go.mod h1:CYbi/cR6M+GjBhJfgU5oMKBUpa11Y3NL45K4HDVrL5Y=
 github.com/josharian/intern v1.0.0 h1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=
