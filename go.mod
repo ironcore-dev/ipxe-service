@@ -7,7 +7,7 @@ require (
 	github.com/coreos/butane v0.20.0
 	github.com/google/addlicense v1.1.1
 	github.com/gorilla/mux v1.8.1
-	github.com/ironcore-dev/ipam v0.2.0
+	github.com/ironcore-dev/ipam v0.2.1
 	github.com/ironcore-dev/metal v0.11.2
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
