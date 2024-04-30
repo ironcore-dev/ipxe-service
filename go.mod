@@ -10,7 +10,7 @@ require (
 	github.com/ironcore-dev/ipam v0.2.1
 	github.com/ironcore-dev/metal v0.11.2
 	github.com/onsi/ginkgo/v2 v2.17.2
-	github.com/onsi/gomega v1.33.0
+	github.com/onsi/gomega v1.33.1
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
