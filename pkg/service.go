@@ -77,7 +77,7 @@ func (i IPXE) getCert(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	//TODO check if ca.crt exists
-	_, _ = fmt.Fprintf(w, configMap.Data["ca.crt"])
+	_, _ = fmt.Fprint(w, configMap.Data["ca.crt"])
 }
 
 func (i IPXE) getChainByUUID(w http.ResponseWriter, r *http.Request) {
