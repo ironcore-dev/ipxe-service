@@ -6,7 +6,7 @@ toolchain go1.22.3
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/coreos/butane v0.21.0
+	github.com/coreos/butane v0.22.0
 	github.com/google/addlicense v1.1.1
 	github.com/gorilla/mux v1.8.1
 	github.com/ironcore-dev/ipam v0.2.2
